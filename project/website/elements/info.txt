@@ -1,0 +1,3 @@
+We are going to keep html elements is here. This way we can avoid redundancy in html dev.
+
+EX: Navbars and footers.
