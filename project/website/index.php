@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Chris
- * Date: 1/23/2017
- * Time: 11:05 AM
- */
+
 ?>
 
 
@@ -17,13 +12,19 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <title>CS496 Project</title>
 
+
+    <!-- Bootstrap Stylesheets   -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <!-- Main Style -->
     <link href="css/main.css" rel="stylesheet">
 
 
 </head>
 <body>
-<h1>Hello, <?php echo "world!!!"; ?></h1>
 
+    <h1>Hello, <?php echo "world!!!"; ?></h1>
+
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
 </body>
 </html>
