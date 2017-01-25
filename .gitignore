@@ -1,2 +1,6 @@
 *.opendb
 *.db
+project/server/server/Debug/
+project/server/Release/server.iobj
+project/server/server/Release/
+project/server/Release/server.ipdb
