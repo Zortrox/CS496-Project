@@ -66,7 +66,20 @@ std::string base64Encode(unsigned char const* charEncode, unsigned int length) {
 	return ret;
 }
 
-void doprocessing(SOCKET sock) {
+std::string hexDecode(std::string strIn) {
+	int len = strIn.length();
+	std::string strOut;
+	for (int i = 0; i< len; i += 2)
+	{
+		std::string strByte = strIn.substr(i, 2);
+		char c = (char)(int)strtol(strByte.c_str(), NULL, 16);
+		strOut.push_back(c);
+	}
+
+	return strOut;
+}
+
+void newConnection(SOCKET sock) {
 	int n;
 	char buffer[1024];
 	memset(buffer, 0, 1024);
@@ -86,15 +99,16 @@ void doprocessing(SOCKET sock) {
 
 	SHA1 checksum;
 	checksum.update(strKey + WS_MAGIC_STRING);
-	std::string strHash = checksum.final();
+	std::string strHash = hexDecode(checksum.final());
+	
 	unsigned char arrHash[200] = { 0 };
 	strcpy_s((char*)arrHash, 200, strHash.c_str());
 	strHash = base64Encode(arrHash, strHash.length());
 
 	printf("Here is the message: %s\n", buffer);
 
-	strSendMsg = "HTTP / 1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + strHash + "\r\n\r\n";
-	n = send(sock, strSendMsg.c_str(), 1024, 0);
+	strSendMsg = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection : Upgrade\r\nSec-WebSocket-Accept: " + strHash + "\r\n\r\n";
+	n = send(sock, strSendMsg.c_str(), strSendMsg.length(), 0);
 	//n = write(sock, "I got your message", 18);
 
 	if (n < 0) {
@@ -138,11 +152,6 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	/* Now start listening for the clients, here
-	* process will go in sleep mode and will wait
-	* for the incoming connection
-	*/
-
 	listen(sockfd, 5);
 	clilen = sizeof(cli_addr);
 
@@ -153,7 +162,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		/* Create child process */
-		std::thread child(doprocessing, newsockfd);
+		std::thread child(newConnection, newsockfd);
 		child.detach();
 	}
 

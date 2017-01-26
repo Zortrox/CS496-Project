@@ -252,7 +252,6 @@ void SHA1::update(std::istream &is)
 /*
  * Add padding and return the message digest.
  */
-
 std::string SHA1::final()
 {
     /* Total number of hashed bits */
