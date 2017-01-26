@@ -1,7 +1,42 @@
 /* Main CSS File for the Project */
 
 html, body{
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
 }
 
+
+.menu-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+
+.add-margin-vertical {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+
+.shake {
+
+    animation-name: shake-animation;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+
+/* Standard syntax */
+@keyframes shake-animation {
+    0%   {
+        transform: rotate(-5deg);
+    }
+    33% {
+        transform: rotate(5deg);
+    }
+    100% {
+        transform: rotate(-5deg);
+    }
+}
