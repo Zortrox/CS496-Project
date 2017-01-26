@@ -1,9 +1,6 @@
 /*Game server for communicating with the website, host screen,
 and controllers*/
 
-#include <iostream>
-#include <string>
-
 //#include <stdio.h>
 //#include <sys/types.h>
 #include <stdlib.h>
@@ -20,21 +17,84 @@ and controllers*/
 #include <netdb.h>      // no idea again :/
 #endif
 
+#include <iostream>
+#include <string>
+#include "sha1-master\sha1.hpp"
+
+static const std::string WS_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+static const std::string BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+std::string base64Encode(unsigned char const* charEncode, unsigned int length) {
+	std::string ret;
+	int i = 0;
+	int j = 0;
+	unsigned char arrChar3[3];
+	unsigned char arrChar4[4];
+
+	while (length--) {
+		arrChar3[i++] = *(charEncode++);
+		if (i == 3) {
+			arrChar4[0] = (arrChar3[0] & 0xfc) >> 2;
+			arrChar4[1] = ((arrChar3[0] & 0x03) << 4) + ((arrChar3[1] & 0xf0) >> 4);
+			arrChar4[2] = ((arrChar3[1] & 0x0f) << 2) + ((arrChar3[2] & 0xc0) >> 6);
+			arrChar4[3] = arrChar3[2] & 0x3f;
+
+			for (i = 0; (i <4); i++)
+				ret += BASE64_CHARS[arrChar4[i]];
+			i = 0;
+		}
+	}
+
+	if (i)
+	{
+		for (j = i; j < 3; j++)
+			arrChar3[j] = '\0';
+
+		arrChar4[0] = (arrChar3[0] & 0xfc) >> 2;
+		arrChar4[1] = ((arrChar3[0] & 0x03) << 4) + ((arrChar3[1] & 0xf0) >> 4);
+		arrChar4[2] = ((arrChar3[1] & 0x0f) << 2) + ((arrChar3[2] & 0xc0) >> 6);
+		arrChar4[3] = arrChar3[2] & 0x3f;
+
+		for (j = 0; (j < i + 1); j++)
+			ret += BASE64_CHARS[arrChar4[j]];
+
+		//padding
+		while ((i++ < 3))
+			ret += '=';
+	}
+
+	return ret;
+}
+
 void doprocessing(SOCKET sock) {
 	int n;
 	char buffer[1024];
 	memset(buffer, 0, 1024);
 	n = recv(sock, buffer, 1023, 0);
 	//n = read(sock, buffer, 255);
-
 	if (n < 0) {
 		perror("ERROR reading from socket");
 		std::cin.ignore();
 		exit(1);
 	}
 
+	std::string strRecvMsg = std::string(buffer);
+	std::string strSendMsg = "";
+	int indKey = strRecvMsg.find("Sec-WebSocket-Key:") + 19;
+	int indLineEnd = strRecvMsg.find("\r\n", indKey);
+	std::string strKey = strRecvMsg.substr(indKey, indLineEnd - indKey);
+
+	SHA1 checksum;
+	checksum.update(strKey + WS_MAGIC_STRING);
+	std::string strHash = checksum.final();
+	unsigned char arrHash[200] = { 0 };
+	strcpy_s((char*)arrHash, 200, strHash.c_str());
+	strHash = base64Encode(arrHash, strHash.length());
+
 	printf("Here is the message: %s\n", buffer);
-	n = send(sock, buffer, 1024, 0);
+
+	strSendMsg = "HTTP / 1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + strHash + "\r\n\r\n";
+	n = send(sock, strSendMsg.c_str(), 1024, 0);
 	//n = write(sock, "I got your message", 18);
 
 	if (n < 0) {
