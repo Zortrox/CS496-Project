@@ -18,3 +18,25 @@ html, body{
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+
+.shake {
+
+    animation-name: shake-animation;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+
+/* Standard syntax */
+@keyframes shake-animation {
+    0%   {
+        transform: rotate(-5deg);
+    }
+    33% {
+        transform: rotate(5deg);
+    }
+    100% {
+        transform: rotate(-5deg);
+    }
+}

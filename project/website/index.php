@@ -27,26 +27,29 @@
         <div class="menu-container">
             <div class="col-md-4 well">
                 <div class="col-row">
-                    <h1 class="text-center">
+                    <h1 class="text-center shake">
                         <i class="fa fa-child" aria-hidden="true"></i> Party Screen <i class="fa fa-child" aria-hidden="true"></i>
                     </h1>
                 </div>
                 <div class="col-row">
-                    <button type="button" class="btn add-margin-vertical btn-primary center-block">Host Game</button>
+                    <button type="button" id="host-btn" class="btn menu-btn add-margin-vertical btn-primary center-block"><i class="fa fa-tv" aria-hidden="true"></i> Host Game</button>
                 </div>
 
                 <div class="col-row">
-                    <button type="button" class="btn add-margin-vertical btn-primary center-block">Join Game</button>
+                    <button type="button" id="join-btn" class="btn menu-btn add-margin-vertical btn-primary center-block"><i class="fa fa-user-plus" aria-hidden="true"></i> Join Game</button>
                 </div>
                 <div class="col-row">
-                    <button type="button" class="btn add-margin-vertical btn-info center-block">Information</button>
+                    <button type="button" id="info-btn" data-toggle="modal" data-target="#info-modal" class="btn menu-btn add-margin-vertical btn-info center-block"><i class="fa fa-info-circle" aria-hidden="true"></i> Info</button>
                 </div>
             </div>
         </div>
     </div>
 
 
+    <?php require_once("elements/info-modal.php"); ?>
+
     <script src="js/jquery-3.1.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/menu.js"></script>
 </body>
 </html>
