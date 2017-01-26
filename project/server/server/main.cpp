@@ -88,7 +88,7 @@ void newConnection(SOCKET sock) {
 	if (n < 0) {
 		perror("ERROR reading from socket");
 		std::cin.ignore();
-		exit(1);
+		return; //listen for new connections
 	}
 
 	std::string strRecvMsg = std::string(buffer);
@@ -109,12 +109,13 @@ void newConnection(SOCKET sock) {
 
 	strSendMsg = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection : Upgrade\r\nSec-WebSocket-Accept: " + strHash + "\r\n\r\n";
 	n = send(sock, strSendMsg.c_str(), strSendMsg.length(), 0);
+	//send(sock, "HI", 2, 0);
 	//n = write(sock, "I got your message", 18);
 
 	if (n < 0) {
 		perror("ERROR writing to socket");
 		std::cin.ignore();
-		exit(1);
+		return; //listen for new connections
 	}
 }
 
