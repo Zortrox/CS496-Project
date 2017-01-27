@@ -116,9 +116,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sha1-master\sha1.cpp" />
+    <ClCompile Include="threadqueue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sha1-master\sha1.hpp" />
+    <ClInclude Include="threadqueue.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -20,10 +20,66 @@ and controllers*/
 #include <iostream>
 #include <string>
 #include "sha1-master\sha1.hpp"
+#include "threadqueue.h"
 
 static const std::string WS_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 static const std::string BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+//decode the WebSocket client message
+std::string decodeMessage(std::string msg) {
+	char secondByte = msg[1];
+
+	int length = secondByte & 127;
+	int indexFirstMask = 2;
+
+	if (length == 126) indexFirstMask = 4;
+	else if (length == 127)  indexFirstMask = 10;
+
+	char masks[] = { msg[indexFirstMask], msg[indexFirstMask+1], msg[indexFirstMask+2], msg[indexFirstMask+3] };
+	
+	int indexFirstDataByte = indexFirstMask + 4;
+	std::string decoded = "";
+
+	for (size_t i = indexFirstDataByte, j = 0; i < msg.length(); i++, j++) {
+		decoded += (char)(msg[i] ^ masks[j % 4]);
+	}
+
+	return decoded;	
+}
+
+//encodes the message to send to a WebSocket
+std::string encodeMessage(std::string msg) {
+	std::string encoded = "";
+
+	//129 is a text message
+	encoded += (char)129;
+
+	//set the size of the message
+	if (msg.length() <= 125) {
+		encoded += (char)msg.length();
+	} else if (msg.length() >= 126 && msg.length() <= 65535) {
+		encoded += (char)126;
+		encoded += (char)((msg.length() >> 8) & 255);
+		encoded += (char)(msg.length() & 255);
+	} else {
+		encoded += (char)127;
+		encoded += (char)(((unsigned long long)msg.length() >> 56) & 255);
+		encoded += (char)(((unsigned long long)msg.length() >> 48) & 255);
+		encoded += (char)(((unsigned long long)msg.length() >> 40) & 255);
+		encoded += (char)(((unsigned long long)msg.length() >> 32) & 255);
+		encoded += (char)(((unsigned long long)msg.length() >> 24) & 255);
+		encoded += (char)((msg.length() >> 16) & 255);
+		encoded += (char)((msg.length() >> 8) & 255);
+		encoded += (char)(msg.length() & 255);
+	}
+
+	//add the message content
+	encoded += msg;
+
+	return encoded;
+}
+
+//encode a binary char array into base64
 std::string base64Encode(unsigned char const* charEncode, unsigned int length) {
 	std::string ret;
 	int i = 0;
@@ -66,6 +122,7 @@ std::string base64Encode(unsigned char const* charEncode, unsigned int length) {
 	return ret;
 }
 
+//decode a hex string into binary
 std::string hexDecode(std::string strIn) {
 	int len = strIn.length();
 	std::string strOut;
@@ -81,8 +138,7 @@ std::string hexDecode(std::string strIn) {
 
 void newConnection(SOCKET sock) {
 	int n;
-	char buffer[1024];
-	memset(buffer, 0, 1024);
+	char buffer[1024] = { 0 };
 	n = recv(sock, buffer, 1023, 0);
 	//n = read(sock, buffer, 255);
 	if (n < 0) {
@@ -90,6 +146,8 @@ void newConnection(SOCKET sock) {
 		std::cin.ignore();
 		return; //listen for new connections
 	}
+
+	printf("Here is the message: %s\n", buffer);
 
 	std::string strRecvMsg = std::string(buffer);
 	std::string strSendMsg = "";
@@ -105,9 +163,7 @@ void newConnection(SOCKET sock) {
 	strcpy_s((char*)arrHash, 200, strHash.c_str());
 	strHash = base64Encode(arrHash, strHash.length());
 
-	printf("Here is the message: %s\n", buffer);
-
-	strSendMsg = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection : Upgrade\r\nSec-WebSocket-Accept: " + strHash + "\r\n\r\n";
+	strSendMsg = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + strHash + "\r\n\r\n";
 	n = send(sock, strSendMsg.c_str(), strSendMsg.length(), 0);
 	//send(sock, "HI", 2, 0);
 	//n = write(sock, "I got your message", 18);
@@ -117,6 +173,14 @@ void newConnection(SOCKET sock) {
 		std::cin.ignore();
 		return; //listen for new connections
 	}
+
+	char buffer2[1024] = { 0 };
+	n = recv(sock, buffer2, 1023, 0);
+	std::string decoded = decodeMessage(buffer2);
+	std::cout << "Here is the message: " << decoded << std::endl;
+
+	std::string encoded = encodeMessage("test send msg");
+	send(sock, encoded.c_str(), encoded.length(), 0);
 }
 
 int main(int argc, char *argv[]) {
@@ -129,6 +193,7 @@ int main(int argc, char *argv[]) {
 	/* First call to socket() function */
 	//SOCK_DGRAM
 	SOCKET sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	ThreadQueue<SOCKET> qSockets;
 
 	if (sockfd < 0) {
 		perror("ERROR opening socket");
@@ -159,7 +224,7 @@ int main(int argc, char *argv[]) {
 	while (true) {
 		SOCKET newsockfd = SOCKET_ERROR;
 		while (newsockfd == SOCKET_ERROR) {
-			newsockfd = accept(sockfd, (sockaddr*)&cli_addr, &clilen);
+			qSockets.push(accept(sockfd, (sockaddr*)&cli_addr, &clilen));
 		}
 
 		/* Create child process */
