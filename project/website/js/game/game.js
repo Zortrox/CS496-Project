@@ -26,6 +26,15 @@ function Canvas(canv, game){
 	}
 
 	this.addGameObject = function(obj){
+		for (var prop in obj.params) {
+	    if (obj.params.hasOwnProperty(prop)) {
+	    		if(!this.game.params.hasOwnProperty(prop)){
+	        	this.game.property[""+prop] = obj[""+prop];
+	      	} else {
+	      		//TODO: throw error for repeated property
+	      	}
+	    }
+		}
 		this.dynamicObjects.push(obj);
 	}
 
