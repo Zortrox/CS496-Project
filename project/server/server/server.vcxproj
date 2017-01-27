@@ -114,13 +114,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameRoom.cpp" />
+    <ClCompile Include="json11-master\json11.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sha1-master\sha1.cpp" />
-    <ClCompile Include="threadqueue.cpp" />
+    <ClCompile Include="WebSocketFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameRoom.h" />
+    <ClInclude Include="json11-master\json11.hpp" />
     <ClInclude Include="sha1-master\sha1.hpp" />
-    <ClInclude Include="threadqueue.h" />
+    <ClInclude Include="ThreadQueue.hpp" />
+    <ClInclude Include="WebSocketFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
