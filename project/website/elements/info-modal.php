@@ -9,7 +9,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="info-modal" tabindex="-1" role="dialog" aria-labelledby="info-modalLabel">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog" role="document" style="width:60%">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -18,12 +18,12 @@
             <div class="modal-body">
                 <h2>What is Party Screen?</h2>
                 <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel eleifend mauris. Nulla facilisi. Pellentesque iaculis erat et purus consectetur, et tristique enim placerat. Vestibulum cursus a dolor eget iaculis. Pellentesque sodales tristique ipsum eu condimentum. Quisque pellentesque metus at vulputate imperdiet. Ut non dignissim nisl. Morbi a convallis elit. Aliquam eu justo fermentum odio molestie fermentum. Mauris tellus orci, iaculis vel imperdiet id, suscipit vitae magna.
+                    Party Screen allows you to play online multiplayer games, using you smartphone as a controller, while still viewing the game on a separate screen. You can play with your friends or join a random game.
                 </p>
 
                 <h2>How to Play</h2>
                 <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vel eleifend mauris. Nulla facilisi. Pellentesque iaculis erat et purus consectetur, et tristique enim placerat. Vestibulum cursus a dolor eget iaculis. Pellentesque sodales tristique ipsum eu condimentum. Quisque pellentesque metus at vulputate imperdiet. Ut non dignissim nisl. Morbi a convallis elit. Aliquam eu justo fermentum odio molestie fermentum. Mauris tellus orci, iaculis vel imperdiet id, suscipit vitae magna.
+                    In order to host a game, visit this site with the device on which you want to display the game. Choose the host game button and then choose from our selection of games. If you wish to resrict the game to your friends, select the private option. You will be given a code to allow others to join. Select start to begin the game. To join a game, visit the site on your smartphone and select the join button. If you wish to join a specific game, enter the host's code in the space provided. To join a random game, select the game you wish to play and click search. When you are connected to a game, your phone will display the controller for that game. Have fun!
                 </p>
 
                 <h2>Credits</h2>
@@ -31,7 +31,7 @@
                     <li>Christopher Goulet</li>
                     <li>Connor Brooks</li>
                     <li>Matthew Clark</li>
-                    <li>Jared</li>
+                    <li>Jared Prince</li>
                 </ul>
             </div>
             <div class="modal-footer">
