@@ -25,9 +25,11 @@ and controllers*/
 using namespace json11;
 
 int nextEmptyRoom(std::vector<GameRoom*> vecGameRooms) {
-	for (int i = 0; i < vecGameRooms.size(); i++) {
+	for (size_t i = 0; i < vecGameRooms.size(); i++) {
 		if (vecGameRooms[i] == NULL) return i;
 	}
+
+	return -1;
 }
 
 int main(int argc, char *argv[]) {
@@ -55,15 +57,21 @@ int main(int argc, char *argv[]) {
 		//get next empty room position
 		int indexEmptyRoom = nextEmptyRoom(vecGameRooms);
 
-		//process PHP info
-		Json phpData;
-		WSF::newPHPRequest(clientSocket, &phpData, indexEmptyRoom);
+		if (indexEmptyRoom < 0) {
+			//no empty room
+			WSF::closeSocket(clientSocket);
+		}
+		else {
+			//process PHP info
+			Json phpData;
+			WSF::newPHPRequest(clientSocket, &phpData, indexEmptyRoom);
 
-		//create new room at next empty position
-		vecGameRooms.at(indexEmptyRoom) = new GameRoom();
-		std::thread thrRoom = vecGameRooms.at(indexEmptyRoom)->initGameThread(phpData);
-		thrRoom.detach();
-		std::cout << "[New Room Created]" << std::endl;
+			//create new room at next empty position
+			vecGameRooms.at(indexEmptyRoom) = new GameRoom();
+			std::thread thrRoom = vecGameRooms.at(indexEmptyRoom)->initGameThread(phpData);
+			thrRoom.detach();
+			std::cout << "[New Room Created]" << std::endl;
+		}
 	}
 
 #ifdef _WIN32

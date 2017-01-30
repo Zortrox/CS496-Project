@@ -1,0 +1,25 @@
+SERVER INFORMATION
+
+========================
+== TEST FUNCTIONALITY ==
+========================
+Start the server.
+
+Two files, test-site.php & test-site.html, can be found in the /project/server directory (both use localhost).
+Running the test-site.php creates a new room in the next open slot (10 slots currently) on the server.
+Refresh the test-site.php multiple times to create more rooms until at least room with port 3002 is created.
+You can see the room information JSON on this test-site.php page.
+
+Run the test-site.html file to connect to the room on port 3002.  The first client to connect is the SS host.
+Every new page opened will be the "controllers" (run new tabs, refreshing disconnects/reconnects).
+
+====================
+== SERVER BACKEND ==
+====================
+Client messages are directly sent/echoed to the SS host, so you can control how you want it formatted (JSON, etc.).
+Client disconnects (tab close, etc.) send "[[close]]" to the SS host (text will change in the future).
+Host disconnects broadcast to all controllers in room "[[close]]".
+Connecting clients priorities:
+	1. Host exists (no host connected yet or host disconnected)
+	2. Open controller slot (if another controller disconnected)
+	3. New controller slot created at end of array
