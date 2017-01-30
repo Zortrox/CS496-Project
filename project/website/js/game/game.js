@@ -101,6 +101,10 @@ function Game(id){
 		this.frame_rate = num;
 	}
 
+	this.establishParams = function(){
+		//TODO: Communicate with server to establish initial param structure
+	}
+
 	this.updateParams = function(){
 		//TODO: Communicate with server to obtain updated values of all params
 	}
@@ -112,6 +116,7 @@ function Game(id){
 	}
 
 	this.startGame = function(){
+		this.establishParams();
 		var obj = this;
 		setTimeout(function(){
 			obj.gameLoop(obj);
