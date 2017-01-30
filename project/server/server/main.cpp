@@ -20,41 +20,48 @@ and controllers*/
 #include "GameRoom.h"
 #include "json11-master\json11.hpp"
 
+#define MAX_ROOMS 10
+
 using namespace json11;
 
+int nextEmptyRoom(std::vector<GameRoom*> vecGameRooms) {
+	for (int i = 0; i < vecGameRooms.size(); i++) {
+		if (vecGameRooms[i] == NULL) return i;
+	}
+}
+
 int main(int argc, char *argv[]) {
+
+#ifdef _WIN32
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
 
 	std::vector<GameRoom*> vecGameRooms;
+	vecGameRooms.resize(MAX_ROOMS, NULL);
 	
 	//thread-safe queue for connections
 	ThreadQueue<SOCKET>* qSockets = new ThreadQueue<SOCKET>();
 	//listen for new web server connections on port 2000
 	//store them in the queue
 	std::atomic<bool> bExit = false;
-	std::thread listener(WSF::listenConnections, qSockets, 2000, &bExit);
+	std::thread listener(WSF::listenConnections, qSockets, PHP_PORT, &bExit);
 	listener.detach();
 
 	//process new web server connections
 	while (!bExit) {
 		SOCKET clientSocket = qSockets->pop();
-		WSF::newConnection(clientSocket);
-		//get PHP JSON values
-		//parse to get game information
-		std::string strErr;
-		std::string strJson = "{\"name\":\"IDEK\","
-			"\"room\":1234,"
-			"\"game\":1,"
-			"\"players\":5,"
-			"\"port\":3005,"
-			"\"pass\":\"pika\"}";
-		Json phpData = Json::parse(strJson, strErr);
 
-		//create new room
-		GameRoom* room = new GameRoom(phpData);
-		vecGameRooms.push_back(room);
-		std::thread thrRoom(room->initGame);
+		//get next empty room position
+		int indexEmptyRoom = nextEmptyRoom(vecGameRooms);
+
+		//process PHP info
+		Json phpData;
+		WSF::newPHPRequest(clientSocket, &phpData, indexEmptyRoom);
+
+		//create new room at next empty position
+		vecGameRooms.at(indexEmptyRoom) = new GameRoom();
+		std::thread thrRoom = vecGameRooms.at(indexEmptyRoom)->initGameThread(phpData);
 		thrRoom.detach();
 		std::cout << "[New Room Created]" << std::endl;
 	}

@@ -93,7 +93,6 @@ void WSF::newConnection(SOCKET sock) {
 	//n = read(sock, buffer, 255);
 	if (n < 0) {
 		perror("ERROR reading from socket");
-		std::cin.ignore();
 		return; //listen for new connections
 	}
 
@@ -105,7 +104,6 @@ void WSF::newConnection(SOCKET sock) {
 
 	if (n < 0) {
 		perror("ERROR writing to socket");
-		std::cin.ignore();
 		return; //listen for new connections
 	}
 
@@ -116,6 +114,49 @@ void WSF::newConnection(SOCKET sock) {
 
 	std::string encoded = WSF::encodeMessage("test send msg");
 	send(sock, encoded.c_str(), encoded.length(), 0);
+}
+
+void WSF::newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum) {
+	int n;
+
+	char buffer[1024] = { 0 };
+	n = recv(sock, buffer, 1023, 0);
+	//n = read(sock, buffer, 255);
+
+	if (n < 0) {
+		perror("ERROR reading from socket");
+	}
+	else {
+		std::string strErr;
+		std::string strJson = "{\"name\":\"IDEK\","
+			"\"game\":1,"
+			"\"players\":5,"
+			"\"pass\":\"pika\"}";
+		(*phpData) = json11::Json::parse(strJson, strErr);
+		//*phpData = json11::Json::parse(std::string(buffer), strErr);
+
+		//add room number and port to room Json
+		json11::Json::object roomData = json11::Json::object((*phpData).object_items());
+		roomData["room"] = roomNum;
+		roomData["port"] = ROOM_PORT_START + roomNum;
+		(*phpData) = json11::Json{ roomData };
+
+		std::string strRoomData = (*phpData).dump();
+		n = send(sock, strRoomData.c_str(), strRoomData.length(), 0);
+		//send(sock, "HI", 2, 0);
+		//n = write(sock, "I got your message", 18);
+
+		if (n < 0) {
+			perror("ERROR writing to socket");
+		}
+	}
+
+	//close sockets at the end
+#ifdef _WIN32
+	closesocket(sock);
+#else
+	close(sock);
+#endif
 }
 
 //add all connections to socket queue
@@ -160,7 +201,7 @@ void WSF::listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic
 #ifdef _WIN32
 	closesocket(sctListen);
 #else
-	close(sockfd);
+	close(sctListen);
 #endif
 }
 

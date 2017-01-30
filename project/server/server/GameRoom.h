@@ -3,16 +3,16 @@
 #include "WebSocketFunctions.h"
 #include <vector>
 #include <atomic>
+#include <thread>
 #include "json11-master\json11.hpp"
 
 class GameRoom {
 public:
-	GameRoom(std::string name, int room, int game, int players, int port, std::string pass = "");
-	GameRoom(json11::Json jsonData);
-
+	GameRoom();
 	~GameRoom();
 
-	void initGame();
+	void initGame(json11::Json jsonData);
+	std::thread initGameThread(json11::Json jsonData);
 
 private:
 	//functions

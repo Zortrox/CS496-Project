@@ -13,6 +13,10 @@
 #include <string>
 #include <atomic>
 #include "ThreadQueue.hpp"
+#include "json11-master\json11.hpp"
+
+#define ROOM_PORT_START 3000
+#define PHP_PORT 2000
 
 class WSF {
 public:
@@ -20,6 +24,7 @@ public:
 	static std::string encodeMessage(std::string msg);
 	static std::string handshakeResponse(std::string msg);
 	static void newConnection(SOCKET sock);
+	static void newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum);
 	static void listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic<bool>* bExit);
 
 private:
