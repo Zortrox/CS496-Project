@@ -3,21 +3,25 @@
 #include "WebSocketFunctions.h"
 #include <vector>
 #include <atomic>
+#include <thread>
 #include "json11-master\json11.hpp"
+
+#define GAME_HOST -1
 
 class GameRoom {
 public:
-	GameRoom(std::string name, int room, int game, int players, int port, std::string pass = "");
-	GameRoom(json11::Json jsonData);
-
+	GameRoom();
 	~GameRoom();
 
-	void initGame();
+	void initGame(json11::Json jsonData);
+	std::thread initGameThread(json11::Json jsonData);
 
 private:
 	//functions
-	void sendHostUpdate();
-	void processUpdates();
+	void sendHostUpdate(std::string controllerData);
+	void controllerBroadcast(std::string msgBroadcast);
+	void readClientUpdates(int playerNum);
+	void processConnections();
 
 	//variables
 	std::string strName;
@@ -29,6 +33,9 @@ private:
 
 	ThreadQueue<SOCKET>* qSockets;
 	std::vector<std::string> gameVariables;
+	std::atomic<SOCKET> hostSocket;
+	std::vector<SOCKET> vecControllers;
 
 	std::atomic<bool> bExit;
+	std::atomic<bool> hostConnected;
 };

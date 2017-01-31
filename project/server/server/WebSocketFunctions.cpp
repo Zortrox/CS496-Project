@@ -8,21 +8,27 @@ static const std::string BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm
 
 //decode the WebSocket client message
 std::string WSF::decodeMessage(std::string msg) {
-	char secondByte = msg[1];
-
-	int length = secondByte & 127;
-	int indexFirstMask = 2;
-
-	if (length == 126) indexFirstMask = 4;
-	else if (length == 127)  indexFirstMask = 10;
-
-	char masks[] = { msg[indexFirstMask], msg[indexFirstMask + 1], msg[indexFirstMask + 2], msg[indexFirstMask + 3] };
-
-	int indexFirstDataByte = indexFirstMask + 4;
 	std::string decoded = "";
+	char firstByte = msg[0];
 
-	for (size_t i = indexFirstDataByte, j = 0; i < msg.length(); i++, j++) {
-		decoded += (char)(msg[i] ^ masks[j % 4]);
+	if ((firstByte & 0xF) == MSG_OPCODE_TEXT) { //if first byte is "xxxx 0001"
+		char secondByte = msg[1];
+
+		int length = secondByte & 127;
+		int indexFirstMask = 2;
+
+		if (length == 126) indexFirstMask = 4;
+		else if (length == 127)  indexFirstMask = 10;
+
+		char masks[] = { msg[indexFirstMask], msg[indexFirstMask + 1], msg[indexFirstMask + 2], msg[indexFirstMask + 3] };
+
+		int indexFirstDataByte = indexFirstMask + 4;
+		for (size_t i = indexFirstDataByte, j = 0; i < msg.length(); i++, j++) {
+			decoded += (char)(msg[i] ^ masks[j % 4]);
+		}
+	}
+	else if ((firstByte & 0xF) == MSG_OPCODE_CLOSE) { //if first byte is "xxxx 1000"
+		decoded = "[[close]]";
 	}
 
 	return decoded;
@@ -93,7 +99,6 @@ void WSF::newConnection(SOCKET sock) {
 	//n = read(sock, buffer, 255);
 	if (n < 0) {
 		perror("ERROR reading from socket");
-		std::cin.ignore();
 		return; //listen for new connections
 	}
 
@@ -105,17 +110,47 @@ void WSF::newConnection(SOCKET sock) {
 
 	if (n < 0) {
 		perror("ERROR writing to socket");
-		std::cin.ignore();
 		return; //listen for new connections
 	}
+}
 
-	char buffer2[1024] = { 0 };
-	n = recv(sock, buffer2, 1023, 0);
-	std::string decoded = WSF::decodeMessage(buffer2);
-	//std::cout << "Here is the message: " << decoded << std::endl;
+void WSF::newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum) {
+	int n;
 
-	std::string encoded = WSF::encodeMessage("test send msg");
-	send(sock, encoded.c_str(), encoded.length(), 0);
+	char buffer[1024] = { 0 };
+	n = recv(sock, buffer, 1023, 0);
+	//n = read(sock, buffer, 255);
+
+	if (n < 0) {
+		perror("ERROR reading from socket");
+	}
+	else {
+		std::string strErr;
+		std::string strJson = "{\"name\":\"IDEK\","
+			"\"game\":1,"
+			"\"players\":5,"
+			"\"pass\":\"pika\"}";
+		(*phpData) = json11::Json::parse(strJson, strErr);
+		//*phpData = json11::Json::parse(std::string(buffer), strErr);
+
+		//add room number and port to room Json
+		json11::Json::object roomData = json11::Json::object((*phpData).object_items());
+		roomData["room"] = roomNum;
+		roomData["port"] = ROOM_PORT_START + roomNum;
+		(*phpData) = json11::Json{ roomData };
+
+		std::string strRoomData = (*phpData).dump();
+		n = send(sock, strRoomData.c_str(), strRoomData.length(), 0);
+		//send(sock, "HI", 2, 0);
+		//n = write(sock, "I got your message", 18);
+
+		if (n < 0) {
+			perror("ERROR writing to socket");
+		}
+	}
+
+	//close sockets at the end
+	closeSocket(sock);
 }
 
 //add all connections to socket queue
@@ -157,10 +192,14 @@ void WSF::listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic
 		}
 	}
 
+	closeSocket(sctListen);
+}
+
+void WSF::closeSocket(SOCKET sock) {
 #ifdef _WIN32
-	closesocket(sctListen);
+	closesocket(sock);
 #else
-	close(sockfd);
+	close(sctListen);
 #endif
 }
 
