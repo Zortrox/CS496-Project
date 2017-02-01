@@ -103,7 +103,8 @@ function Game(id){
 
 	this.receiveControls = function(){
 		//TODO: Communicate with server to obtain controller input
-
+		var controls = null;
+		this.controlHandler(controls);
 	}
 
 	this.setControlHandler = function(f){
@@ -117,7 +118,6 @@ function Game(id){
 	}
 
 	this.startGame = function(){
-		this.establishParams();
 		var obj = this;
 		setTimeout(function(){
 			obj.gameLoop(obj);
@@ -126,7 +126,6 @@ function Game(id){
 
 	this.gameLoop = function(obj){
 		if(obj.active){
-			obj.updateParams();
 			obj.gameRefresh();
 			setTimeout(function(){
 				obj.update(obj);
