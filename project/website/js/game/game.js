@@ -65,7 +65,7 @@ function Canvas(canv, game){
 //-------------------------------------------------------------------------------------
 
 //Game Object
-//Master object (singleton design model?) for a unique game instance
+//Master object for a unique game instance
 function Game(id){
 	this.id = id;
 	this.params = {};
