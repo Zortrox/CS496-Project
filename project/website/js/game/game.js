@@ -69,11 +69,11 @@ function Canvas(canv, game){
 function Game(id){
 	this.id = id;
 	this.params = {};
+	this.controlHandler = null;
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
 	this.frame_rate = 10;
 	this.active = true;
-	//this.players = [];
 	this.htmlBod = document.getElementsByTagName("body")[0];
 	
 	//all HTML element insertions (Canvas or other) insert the new element as the first element in body
@@ -101,12 +101,13 @@ function Game(id){
 		this.frame_rate = num;
 	}
 
-	this.establishParams = function(){
-		//TODO: Communicate with server to establish initial param structure
+	this.receiveControls = function(){
+		//TODO: Communicate with server to obtain controller input
+
 	}
 
-	this.updateParams = function(){
-		//TODO: Communicate with server to obtain updated values of all params
+	this.setControlHandler = function(f){
+		this.controlHandler = f;
 	}
 
 	this.gameRefresh = function(){
