@@ -36,3 +36,12 @@ function show(name){
     var menu = document.getElementById(name);
     menu.style.display = "block";
 }
+
+ $(document).bind('keydown', function(e) {
+    if(e.which == 39){
+        $('.carousel').carousel('next');
+    }
+    else if(e.which == 37){
+        $('.carousel').carousel('prev');
+    }
+});

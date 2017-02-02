@@ -22,7 +22,7 @@
 
 </head>
 <body>
-
+    
     <div class="container-fluid">
         <div class="menu-container">
 
@@ -56,21 +56,12 @@
 
             <div class="col-md-4 well" id="host-menu" style="display:none">
                 <div class="col-row" style="width: 100%">
-                    <button style="margin: 0px;" type="button" class="btn menu-btn main-menu-btn btn-primary" onclick="show('main-menu'); hide('host-menu')"><i class=" fa fa-reply" aria-hidden="true"></i></button>
+                    <button style="margin-bottom: 5vh;" type="button" class="btn menu-btn main-menu-btn btn-primary" onclick="show('main-menu'); hide('host-menu')"><i class=" fa fa-reply" aria-hidden="true"></i></button>
                     <h1 style="margin-top: 0px;" class="text-center shake" >Host a Game</h1>
 
                     <div class="row">
                         <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 1</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 2</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 3</button></div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 4</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 5</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 6</button></div>
-                    </div>
-                    
+                    </div>                    
                 </div>
             </div>
 
@@ -82,8 +73,8 @@
 
             <div class="col-md-4 well" id="join-menu" style="display:none">
                 <div class="col-row" style="width: 100%">
-                    <button style="margin: 0px;" type="button"  class="btn menu-btn main-menu-btn btn-primary" onclick="show('main-menu'); hide('join-menu')"><i class="fa fa-reply" aria-hidden="true"></i></button>
-                    <h1 style="margin-top: 0px;" class="text-center shake" >Join a Game</h1>
+                    <button style="margin: 0px;" type="button" class="btn menu-btn main-menu-btn btn-primary" onclick="show('main-menu'); hide('join-menu')"><i class="fa fa-reply" aria-hidden="true"></i></button>
+                    <h1 style="margin-bottom: 5vh;" class="text-center shake">Join a Game</h1>
                     
                     <form>
                         <div class="input-group">
@@ -92,19 +83,7 @@
                         </div>
                     </form>
                     
-                    <div class="row">
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 1</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 2</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 3</button></div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 4</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 5</button></div>
-                        <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 6</button></div>
-                    </div>
-                    
-                    <button style="margin-top: 20px" type="button" class="btn center-block menu-btn main-menu-btn btn-primary" onclick="hide('join-menu'); show('loading-menu')"><i class="glyphicon glyphicon-globe" aria-hidden="true"> Find Game</i></button>
+                    <button style='margin-top: 2vh' type="button" class="btn center-block menu-btn main-menu-btn btn-primary" onclick="hide('join-menu'); show('loading-menu')"><i class="glyphicon glyphicon-globe" aria-hidden="true"></i> Find Game</button>
                     
                 </div>
             </div>
@@ -113,7 +92,7 @@
             
             <!--          Game Menu            -->
         
-            <div id="game-menu" class="carousel slide" data-interval="0" style="display:none; width: 80%">
+            <div id="game-menu" class="carousel slide col-md-12" data-interval="0" style="display:none">
                 
                 <button style="margin: 0px;" type="button" class="btn menu-btn main-menu-btn btn-primary" onclick="show('main-menu'); hide('game-menu')"><i class="fa fa-reply" aria-hidden="true"></i></button>
                 
@@ -139,25 +118,37 @@
                         $gameList = fopen("game-list.txt", "r");
 
                         while($name = fgets($gameList)){
-                            echo "<div class='carousel-game col-md-8 well item $class'><p>$name</p></div>";
+                            echo "
+                            <div class='carousel-game well item $class'>
+                                <div class='col-md-6'>
+                                    <div class='title col-md-12'>
+                                        <h2>$name</h2>
+                                    </div>
+
+                                    <div>
+                                    
+                                    </div>
+                                </div>
+                                
+                                <div class='col-md-6'>
+                                    <div class='title col-md-12'>
+                                        <h4>Description</h4>
+                                        
+                                    </div>
+
+                                    <div class='col-md-12'>
+                                        <h4>Controls</h4>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            ";
                             $index++;
                             $class = "";
                         }
                     ?>
-<!--
-                    <div class="carousel-game col-md-8 well item active">
-                        
-                    </div>
-                    
-                    <div class="carousel-game col-md-8 well item">
-                    </div>
-                    
-                    <div class="carousel-game col-md-8 well item">
-                    </div>
-                    
-                    <div class="carousel-game col-md-8 well item">
-                    </div>
--->
                 </div>                
             </div>
             
