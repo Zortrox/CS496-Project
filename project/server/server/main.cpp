@@ -52,10 +52,13 @@ int main(int argc, char *argv[]) {
 		else {
 			//process PHP info
 			Json phpData;
-			WSF::newPHPRequest(clientSocket, &phpData, indexEmptyRoom);
 
 			//create new room at next empty position
-			vecGameRooms.at(indexEmptyRoom) = new GameRoom();
+			vecGameRooms.at(indexEmptyRoom) = new GameRoom(&vecGameRooms);
+			vecGameRooms.at(indexEmptyRoom)->getCode();
+
+			WSF::newPHPRequest(clientSocket, &phpData, indexEmptyRoom, vecGameRooms.at(indexEmptyRoom)->getCode());
+
 			std::thread thrRoom = vecGameRooms.at(indexEmptyRoom)->initGameThread(phpData);
 			thrRoom.detach();
 			std::cout << "[New Room Created]" << std::endl;

@@ -29,11 +29,12 @@ public:
 	static std::string encodeMessage(std::string msg);
 	static std::string handshakeResponse(std::string msg);
 	static void newConnection(SOCKET sock);
-	static void newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum);
+	static void newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum, std::string roomCode);
 	static void listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic<bool>* bExit);
 	static void closeSocket(SOCKET sock);
 
 private:
 	static std::string base64Encode(unsigned char const* charEncode, unsigned int length);
 	static std::string hexDecode(std::string strIn);
+	static std::string generateUUID();
 };

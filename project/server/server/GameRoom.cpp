@@ -1,9 +1,14 @@
 #include "GameRoom.h"
-
 #include <iostream>
 
-GameRoom::GameRoom() {
+#define ROOM_CODE_LEN 5
+
+const std::string CODE_CHARS = "ABCDEFGHIJLKMNOPQRSTUVWXYZ0123456789";
+
+GameRoom::GameRoom(std::vector<GameRoom*>* vecGameRooms) {
 	hostConnected = false;
+
+	strCode = generateRoomCode(vecGameRooms);
 }
 
 GameRoom::~GameRoom() {
@@ -29,6 +34,30 @@ void GameRoom::initGame(json11::Json jsonData) {
 
 std::thread GameRoom::initGameThread(json11::Json jsonData) {
 	return std::thread([this, jsonData] { this->initGame(jsonData); });
+}
+
+std::string GameRoom::getCode() {
+	return strCode;
+}
+
+std::string GameRoom::generateRoomCode(std::vector<GameRoom *> *vecGameRooms) {
+	std::string strC;
+	bool goodCode = false;
+
+	while (!goodCode) {
+		for (int i = 0; i < ROOM_CODE_LEN; i++) {
+			strC += CODE_CHARS.at(std::rand() % 36);
+		}
+		goodCode = true;
+
+		for (size_t i = 0; i < vecGameRooms->size(); i++) {
+			if (vecGameRooms->at(i)->getCode() == strC) {
+				goodCode = false;
+			}
+		}
+	}
+
+	return strC;
 }
 
 //send controller updates to host

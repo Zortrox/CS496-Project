@@ -10,14 +10,16 @@
 
 class GameRoom {
 public:
-	GameRoom();
+	GameRoom(std::vector<GameRoom*>* vecGameRooms);
 	~GameRoom();
 
 	void initGame(json11::Json jsonData);
 	std::thread initGameThread(json11::Json jsonData);
+	std::string getCode();
 
 private:
 	//functions
+	std::string generateRoomCode(std::vector<GameRoom*>* vecGameRooms);
 	void sendHostUpdate(std::string controllerData);
 	void controllerBroadcast(std::string msgBroadcast);
 	void readClientUpdates(int playerNum);
@@ -25,6 +27,7 @@ private:
 
 	//variables
 	std::string strName;
+	std::string strCode;
 	std::string strPassword;
 	int roomNum;
 	int gameType;
