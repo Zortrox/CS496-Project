@@ -2,9 +2,9 @@
 
 #include "WebSocketFunctions.h"
 #include <vector>
-#include <atomic>
 #include <thread>
-#include "json11-master\json11.hpp"
+#include "json11-master/json11.hpp"
+#include <atomic>
 
 #define GAME_HOST -1
 

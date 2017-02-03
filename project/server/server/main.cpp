@@ -1,24 +1,10 @@
 /*Game server for communicating with the website, host screen,
 and controllers*/
 
-#include <stdlib.h>
 #include <thread>
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN 1
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#endif
-
 #include <iostream>
-#include <string>
 #include "ThreadQueue.hpp"
 #include "GameRoom.h"
-#include "json11-master\json11.hpp"
 
 #define MAX_ROOMS 10
 
@@ -39,6 +25,8 @@ int main(int argc, char *argv[]) {
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 
+    std::cout << "Server Started" << std::endl;
+
 	std::vector<GameRoom*> vecGameRooms;
 	vecGameRooms.resize(MAX_ROOMS, NULL);
 	
@@ -46,7 +34,7 @@ int main(int argc, char *argv[]) {
 	ThreadQueue<SOCKET>* qSockets = new ThreadQueue<SOCKET>();
 	//listen for new web server connections on port 2000
 	//store them in the queue
-	std::atomic<bool> bExit = false;
+	std::atomic<bool> bExit{false};
 	std::thread listener(WSF::listenConnections, qSockets, PHP_PORT, &bExit);
 	listener.detach();
 
