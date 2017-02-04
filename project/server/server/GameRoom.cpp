@@ -4,11 +4,13 @@
 #define ROOM_CODE_LEN 5
 
 const std::string CODE_CHARS = "ABCDEFGHIJLKMNOPQRSTUVWXYZ0123456789";
+const std::string UUID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 GameRoom::GameRoom(std::vector<GameRoom*>* vecGameRooms) {
 	hostConnected = false;
 
-	strCode = generateRoomCode(vecGameRooms);
+	generateRoomCode(vecGameRooms);
+	generateUUID();
 }
 
 GameRoom::~GameRoom() {
@@ -40,24 +42,43 @@ std::string GameRoom::getCode() {
 	return strCode;
 }
 
-std::string GameRoom::generateRoomCode(std::vector<GameRoom *> *vecGameRooms) {
-	std::string strC;
+std::string GameRoom::getUUID() {
+    return strUUID;
+}
+
+void GameRoom::generateRoomCode(std::vector<GameRoom *> *vecGameRooms) {
+	strCode = "";
 	bool goodCode = false;
 
 	while (!goodCode) {
 		for (int i = 0; i < ROOM_CODE_LEN; i++) {
-			strC += CODE_CHARS.at(std::rand() % 36);
+			int pos = std::rand() % 36;
+			strCode += CODE_CHARS.at(pos);
 		}
 		goodCode = true;
 
 		for (size_t i = 0; i < vecGameRooms->size(); i++) {
-			if (vecGameRooms->at(i)->getCode() == strC) {
+			//check that
+			if (vecGameRooms->at(i) != NULL && this != vecGameRooms->at(i) && vecGameRooms->at(i)->getCode() == strCode) {
 				goodCode = false;
 			}
 		}
 	}
+}
 
-	return strC;
+void GameRoom::generateUUID(){
+    strUUID = std::string(36, ' ');
+
+    strUUID[8] = '-';
+    strUUID[13] = '-';
+    strUUID[18] = '-';
+    strUUID[23] = '-';
+
+    for(int i = 0; i < 36; i++){
+        if (i != 8 && i != 13 && i != 18 && i != 23) {
+            strUUID[i] = UUID_CHARS[std::rand() % 36];
+        }
+    }
 }
 
 //send controller updates to host

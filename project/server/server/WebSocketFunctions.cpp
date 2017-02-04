@@ -7,7 +7,6 @@
 
 static const std::string WS_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 static const std::string BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-static const std::string UUID_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 //decode the WebSocket client message
 std::string WSF::decodeMessage(std::string msg) {
@@ -116,44 +115,29 @@ void WSF::newConnection(SOCKET sock) {
 	}
 }
 
-void WSF::newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum, std::string roomCode) {
+std::string WSF::getPHPData(SOCKET sock) {
 	int n;
 
 	char buffer[1024] = { 0 };
 	n = recv(sock, buffer, 1023, 0);
-	//n = read(sock, buffer, 255);
 
 	if (n < 0) {
+		perror("recv");
 		std::cout << "ERROR reading from socket" << std::endl;
+		return "";
 	}
 	else {
-		std::string strErr;
-		std::string strJson = "{\"name\":\"IDEK\","
-			"\"game\":1,"
-			"\"players\":5,"
-			"\"pass\":\"pika\"}";
-		//(*phpData) = json11::Json::parse(strJson, strErr);
-		(*phpData) = json11::Json::parse(std::string(buffer), strErr);
-
-		//add room number and port to room Json
-		json11::Json::object roomData = json11::Json::object((*phpData).object_items());
-		roomData["room"] = roomCode;
-		roomData["port"] = ROOM_PORT_START + roomNum;
-		roomData["uuid"] = generateUUID();
-		(*phpData) = json11::Json{ roomData };
-
-		std::string strRoomData = (*phpData).dump();
-		n = send(sock, strRoomData.c_str(), strRoomData.length(), 0);
-		//send(sock, "HI", 2, 0);
-		//n = write(sock, "I got your message", 18);
-
-		if (n < 0) {
-			std::cout << "ERROR writing to socket" << std::endl;
-		}
+		return std::string(buffer);
 	}
+}
 
-	//close sockets at the end
-	closeSocket(sock);
+void WSF::sendPHPData(SOCKET sock, std::string roomData) {
+	int n = send(sock, roomData.c_str(), roomData.length(), 0);
+
+	if (n < 0) {
+		perror("send");
+		std::cout << "ERROR writing to socket" << std::endl;
+	}
 }
 
 //add all connections to socket queue
@@ -266,27 +250,4 @@ std::string WSF::hexDecode(std::string strIn) {
 	}
 
 	return strOut;
-}
-
-std::string WSF::generateUUID(){
-	std::string uuid = std::string(36,' ');
-	int rnd = 0;
-
-	uuid[8] = '-';
-	uuid[13] = '-';
-	uuid[18] = '-';
-	uuid[23] = '-';
-
-	uuid[14] = '4';
-
-	for(int i=0;i<36;i++){
-		if (i != 8 && i != 13 && i != 18 && i != 14 && i != 23) {
-			if (rnd <= 0x02) {
-				rnd = 0x2000000 + (std::rand() * 0x1000000) | 0;
-			}
-			rnd >>= 4;
-			uuid[i] = UUID_CHARS[(i == 19) ? ((rnd & 0xf) & 0x3) | 0x8 : rnd & 0xf];
-		}
-	}
-	return uuid;
 }
