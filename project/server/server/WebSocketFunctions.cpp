@@ -118,6 +118,12 @@ void WSF::newConnection(SOCKET sock) {
 std::string WSF::getPHPData(SOCKET sock) {
 	int n;
 
+	//max wait time for PHP data
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 500000;    //500 milliseconds
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
+
 	char buffer[1024] = { 0 };
 	n = recv(sock, buffer, 1023, 0);
 
