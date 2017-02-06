@@ -26,7 +26,7 @@ public:
 	static std::string decodeMessage(std::string msg);
 	static std::string encodeMessage(std::string msg);
 	static std::string handshakeResponse(std::string msg);
-	static void newConnection(SOCKET sock);
+	static bool newConnection(SOCKET sock);
 	static std::string getPHPData(SOCKET sock);
 	static void sendPHPData(SOCKET sock, std::string roomData);
 	static void listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic<bool>* bExit);

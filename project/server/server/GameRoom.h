@@ -24,7 +24,7 @@ private:
     void generateUUID();
 	void sendHostUpdate(std::string controllerData);
 	void controllerBroadcast(std::string msgBroadcast);
-	void readClientUpdates(int playerNum);
+	void readClientUpdates(SOCKET clientSocket);
 	void processConnections();
 
 	//variables
@@ -43,5 +43,4 @@ private:
 	std::vector<SOCKET> vecControllers;
 
 	std::atomic<bool> bExit;
-	std::atomic<bool> hostConnected;
 };

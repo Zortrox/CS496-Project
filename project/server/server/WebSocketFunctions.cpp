@@ -94,14 +94,14 @@ std::string WSF::handshakeResponse(std::string msg) {
 }
 
 //receive and send web socket handshake
-void WSF::newConnection(SOCKET sock) {
+bool WSF::newConnection(SOCKET sock) {
 	int n;
 	char buffer[1024] = { 0 };
 	n = recv(sock, buffer, 1023, 0);
 	//n = read(sock, buffer, 255);
 	if (n < 0) {
 		std::cout << "ERROR reading from socket" << std::endl;
-		return; //listen for new connections
+		return false; //listen for new connections
 	}
 
 	std::string strHandshake = WSF::handshakeResponse(std::string(buffer));
@@ -111,8 +111,10 @@ void WSF::newConnection(SOCKET sock) {
 
 	if (n < 0) {
 		std::cout << "ERROR writing to socket" << std::endl;
-		return; //listen for new connections
+		return false; //listen for new connections
 	}
+
+    return true;
 }
 
 std::string WSF::getPHPData(SOCKET sock) {

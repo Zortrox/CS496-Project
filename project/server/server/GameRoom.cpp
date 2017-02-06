@@ -6,9 +6,10 @@
 const std::string CODE_CHARS = "ABCDEFGHIJLKMNOPQRSTUVWXYZ0123456789";
 const std::string UUID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
-GameRoom::GameRoom(std::vector<GameRoom*>* vecGameRooms) {
-	hostConnected = false;
+using namespace json11;
 
+GameRoom::GameRoom(std::vector<GameRoom*>* vecGameRooms) {
+    hostSocket = SOCKET_ERROR;
 	generateRoomCode(vecGameRooms);
 	generateUUID();
 }
@@ -98,85 +99,103 @@ void GameRoom::controllerBroadcast(std::string msgBroadcast) {
 }
 
 //read controller button presses or other updates
-void GameRoom::readClientUpdates(int playerNum) {
-	SOCKET sock;
-	if (playerNum == GAME_HOST) sock = hostSocket;
-	else sock = vecControllers.at(playerNum);
+void GameRoom::readClientUpdates(SOCKET clientSocket) {
+	bool bSetup = false;
+    int playerNum = GAME_HOST;
 
 	while (!bExit) {
 		char buffer[1024] = { 0 };
-		int n = recv(sock, buffer, 1023, 0);
-		std::string decoded = WSF::decodeMessage(buffer);
-		//std::cout << "Here is the message: " << decoded << std::endl;
+		int n = recv(clientSocket, buffer, 1023, 0);
+        if (n >= 0) {
+            std::string decoded = WSF::decodeMessage(buffer);
 
-		if (playerNum != GAME_HOST) {
-			//send new controller data to game host
-			if (decoded == MSG_TEXT_CLOSE) {
-				WSF::closeSocket(vecControllers.at(playerNum));
-				vecControllers.at(playerNum) = SOCKET_ERROR;	//"remove" from socket vector
-				std::cout << "Player " << playerNum << " disconnected" << std::endl;
-				sendHostUpdate(decoded);
-				return;	//stop the thread
-			}
-			else {
-				std::cout << "[Client Update]: " << decoded << std::endl;
-				sendHostUpdate(decoded);
-			}
-		}
-		else {
-			//process host updates (new game, max player change, password change, etc.)
-			if (decoded == MSG_TEXT_CLOSE) {
-				WSF::closeSocket(hostSocket);
-				hostSocket = SOCKET_ERROR;	//"remove" from socket vector
-				std::cout << "Host disconnected" << std::endl;
-				std::cout << "[Broadcast]: Host disconnected" << std::endl;
-				hostConnected = false;
-				controllerBroadcast(decoded);
-				return;	//stop the thread
-			}
-			else {
-				std::cout << "[Host Update]: " << decoded << std::endl;
-			}
-		}
+            if (!bSetup) {
+                bSetup = true;
+                bool bIsHost = false;
+
+                std::string strErr;
+                Json jsonIdentity = Json::parse(decoded, strErr);
+
+                if (jsonIdentity["uuid"] != Json()) {
+                    std::string uuid = jsonIdentity["uuid"].string_value();
+                    //TODO: Fix a second host connecting (room freezes?)
+                    if (uuid == strUUID) {
+                        if (hostSocket != SOCKET_ERROR) WSF::closeSocket(hostSocket);
+                        hostSocket = clientSocket;
+                        bIsHost = true;
+                        std::cout << "Host connected" << std::endl;
+                    }
+                }
+
+                if (!bIsHost) {
+                    //check for an empty player slot first
+                    bool bEmptySlot = false;
+                    for (size_t i = 0; i < vecControllers.size(); i++) {
+                        if (vecControllers.at(i) == SOCKET_ERROR) {
+                            playerNum = i;
+                            bEmptySlot = true;
+                            break;
+                        }
+                    }
+
+                    if (bEmptySlot) {
+                        vecControllers.at(playerNum) = clientSocket;
+                    } else {
+                        //create a new player slot
+                        playerNum = vecControllers.size();
+                        vecControllers.push_back(clientSocket);
+                    }
+
+                    std::cout << "Player " << playerNum + 1 << " connected" << std::endl;
+                }
+            } else {
+                if (playerNum != GAME_HOST) {
+                    //send new controller data to game host
+                    if (decoded == MSG_TEXT_CLOSE) {
+                        WSF::closeSocket(vecControllers.at(playerNum));
+                        vecControllers.at(playerNum) = SOCKET_ERROR;    //"remove" from socket vector
+                        std::cout << "Player " << playerNum + 1 << " disconnected" << std::endl;
+                        sendHostUpdate(decoded);
+                        return;    //stop the thread
+                    } else {
+                        std::cout << "[Client Update]: " << decoded << std::endl;
+                        sendHostUpdate(decoded);
+                    }
+                } else {
+                    //process host updates (new game, max player change, password change, etc.)
+                    if (decoded == MSG_TEXT_CLOSE) {
+                        WSF::closeSocket(hostSocket);
+                        hostSocket = SOCKET_ERROR;    //"remove" from socket vector
+                        std::cout << "Host disconnected" << std::endl;
+                        std::cout << "[Broadcast]: Host disconnected" << std::endl;
+                        controllerBroadcast(decoded);
+                        return;    //stop the thread
+                    } else {
+                        std::cout << "[Host Update]: " << decoded << std::endl;
+                    }
+                }
+            }
+        } else {
+            //error in socket reading
+            //stop the thread
+            return;
+        }
 	}
 }
 
 void GameRoom::processConnections() {
 	while (!bExit) {
 		SOCKET clientSocket = qSockets->pop();
-		WSF::newConnection(clientSocket);
-		int playerNum = GAME_HOST;		//-1 for host, 0+ for controllers
+		bool bConn = WSF::newConnection(clientSocket);
 
-		if (hostConnected) {
-			//check for an empty player slot first
-			bool bEmptySlot = false;
-			for (size_t i = 0; i < vecControllers.size(); i++) {
-				if (vecControllers.at(i) == SOCKET_ERROR) {
-					playerNum = i;
-					bEmptySlot = true;
-					break;
-				}
-			}
-			
-			if (bEmptySlot) {
-				vecControllers.at(playerNum) = clientSocket;
-			}
-			else {
-				//create a new player slot
-				playerNum = vecControllers.size();
-				vecControllers.push_back(clientSocket);
-			}
-			
-			std::cout << "Player " << playerNum << " connected to Room " << roomNum << std::endl;
+		if (bConn) {
+            //listen for new updates
+            std::thread thrReadUpdates = std::thread([this, clientSocket] {this->readClientUpdates(clientSocket);});
+            thrReadUpdates.detach();
 		}
 		else {
-			hostConnected = true;
-			std::cout << "Host connected to Room " << roomNum << std::endl;
-			hostSocket = clientSocket;
+            //if handshake wasn't successful, close
+            WSF::closeSocket(clientSocket);
 		}
-
-		//listen for new updates
-		std::thread thrReadUpdates = std::thread([this, playerNum] {this->readClientUpdates(playerNum);});
-		thrReadUpdates.detach();
 	}
 }
