@@ -120,27 +120,21 @@
                         while($name = fgets($gameList)){
                             echo "
                             <div class='carousel-game well item $class'>
-                                <div class='col-md-6'>
-                                    <div class='title col-md-12'>
-                                        <h2>$name</h2>
-                                    </div>
-
-                                    <div>
-                                    
-                                    </div>
+                                <h2 class='title'>$name</h2>                                
+                                
+                                <div class='gallery col-md-6'>
+                                    <img src='http://r.ddmcdn.com/s_f/o_1/cx_633/cy_0/cw_1725/ch_1725/w_720/APL/uploads/2014/11/too-cute-doggone-it-video-playlist.jpg'>
                                 </div>
                                 
                                 <div class='col-md-6'>
-                                    <div class='title col-md-12'>
+                                    <div class='description col-md-12'>
                                         <h4>Description</h4>
-                                        
                                     </div>
 
-                                    <div class='col-md-12'>
+                                    <div class='controls col-md-12'>
                                         <h4>Controls</h4>
                                     </div>
                                 </div>
-                                
                             </div>
                             
                             
