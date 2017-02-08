@@ -6,8 +6,12 @@ project/server/server/Release/
 project/server/Release/server.ipdb
 project/server/server.sdf
 project/server/server/x64/
+<<<<<<< HEAD
 project/server/cmake-build-release/CMakeFiles/
 project/server/cmake-build-debug/CMakeFiles/
 project/server/cmake-build-release/
 project/server/cmake-build-debug/
 project/server/.idea/
+=======
+*.tmp
+>>>>>>> 7484878144c3a588a99c44e4b78f6b2ebb7d0ac2
