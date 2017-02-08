@@ -6,3 +6,4 @@ project/server/server/Release/
 project/server/Release/server.ipdb
 project/server/server.sdf
 project/server/server/x64/
+*.tmp
