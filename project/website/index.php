@@ -104,7 +104,7 @@
                         <div class="col-sm-4"><button type="button" class="btn center-block menu-btn main-menu-btn btn-primary">Game 6</button></div>
                     </div>
                     
-                    <button style="margin-top: 20px" type="button" class="btn center-block menu-btn main-menu-btn btn-primary" onclick="hide('join-menu'); show('loading-menu')"><i class="glyphicon glyphicon-globe" aria-hidden="true"> Find Game</i></button>
+                    <button style="margin-top: 20px" type="button" class="btn center-block menu-btn main-menu-btn btn-primary" onclick="hide('join-menu'); show('loading-menu')"><i class="glyphicon glyphicon-globe" aria-hidden="true"></i> Find Game</button>
                     
                 </div>
             </div>
