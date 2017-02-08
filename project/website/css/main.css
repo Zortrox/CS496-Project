@@ -43,7 +43,7 @@ html, body{
 
 .carousel-game{
     width: 100%;
-    height: 600px;
+    height: 90vh;
 }
 
 .carousel-indicators li{
