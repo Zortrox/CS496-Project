@@ -41,9 +41,15 @@ html, body{
     }
 }
 
+.game-page{
+    
+    border-radius: 5px;
+    background: #DDDDDD;
+}
+
 .carousel-game{
     width: 100%;
-    height: 85vh;
+    height: 90vh;
 }
 
 .title{
@@ -51,18 +57,24 @@ html, body{
 }
 
 .description{
-    height: 40vh;
+    height: 36vh;
     overflow: auto;
 }
 
-.controlls{
-    height: 45vh;
+.controls{
+    height: 36vh;
     overflow: auto;
+    margin-top: 2vh;
 }
 
 .gallery{
-    height: 70vh;
+    height: 74vh;
     overflow: auto;
+}
+
+.gallery-image{
+    width: 88vh;
+    height: auto;
 }
 
 .carousel-indicators li{

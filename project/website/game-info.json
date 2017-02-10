@@ -1,6 +1,46 @@
-{ "game" : {
-    "gameplay-image" : "location.jpg",
-    "name" : "",
-    "description" : "",
-    "controls" : "",
-}}
+{   
+    "game 1" : {
+        "gallery" : [
+            "https://www.omnihotels.com/-/media/images/hotels/homrst/restaurants/homrst-omni-homestead-resort-jeffersons-restaurant-2.jpg?h=660&la=en&w=1170",
+            "https://www.omnihotels.com/-/media/images/hotels/homrst/restaurants/homrst-omni-homestead-resort-casino-restaurant.jpg?w=1170",
+            "https://media-cdn.tripadvisor.com/media/photo-s/06/c6/e4/7e/the-clink-restaurant.jpg",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVynoZV_9UJajzTlsXb_3GmZg4E5lRLus2JwFHA6mqiOOTzzhe"
+        ],
+    
+        "name" : "game 1",
+        "description" : "This is the description of our first game. I'm not sure what the game will be yet, so the desciption will be suitably vague. This game is very fun and will provide you and your friends with a great deal of enjoyment. You should play this game. Everyone will like it. It is a great game for any kind of party or social gathering. Please give this game a good rating.",
+        "controls" : "Once again, since I don't know the game, I don't really know the controls. But I'll give it a shot anyway. The controller has several buttons. Each button does something in the game. When you press a button you will be playing the game, and doing different things. These things will help you win the game and impress your friends.",
+        "rating" : 3.67,
+        "votes" : 2367
+    },
+ 
+    "game 2" : {
+        "gallery" : [
+            "https://www.omnihotels.com/-/media/images/hotels/homrst/restaurants/homrst-omni-homestead-resort-jeffersons-restaurant-2.jpg?h=660&la=en&w=1170",
+            "https://www.omnihotels.com/-/media/images/hotels/homrst/restaurants/homrst-omni-homestead-resort-casino-restaurant.jpg?w=1170",
+            "https://media-cdn.tripadvisor.com/media/photo-s/06/c6/e4/7e/the-clink-restaurant.jpg",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVynoZV_9UJajzTlsXb_3GmZg4E5lRLus2JwFHA6mqiOOTzzhe"
+        ],
+    
+        "name" : "game 2",
+        "description" : "This is the description of our first game. I'm not sure what the game will be yet, so the desciption will be suitably vague. This game is very fun and will provide you and your friends with a great deal of enjoyment. You should play this game. Everyone will like it. It is a great game for any kind of party or social gathering. Please give this game a good rating.",
+        "controls" : "Once again, since I don't know the game, I don't really knwo the controlls. But I'll give it a shot anyway. The controller has several buttons. Each button does something in the game. When you press a button you will be playing the game, and doing different things. These things will help you win the game and impress your friends.",
+        "rating" : 3.67,
+        "votes" : 2367
+    },
+    
+    "game 3" : {
+        "gallery" : [
+            "https://www.omnihotels.com/-/media/images/hotels/homrst/restaurants/homrst-omni-homestead-resort-jeffersons-restaurant-2.jpg?h=660&la=en&w=1170",
+            "https://www.omnihotels.com/-/media/images/hotels/homrst/restaurants/homrst-omni-homestead-resort-casino-restaurant.jpg?w=1170",
+            "https://media-cdn.tripadvisor.com/media/photo-s/06/c6/e4/7e/the-clink-restaurant.jpg",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSVynoZV_9UJajzTlsXb_3GmZg4E5lRLus2JwFHA6mqiOOTzzhe"
+        ],
+    
+        "name" : ";ELRIFNWELFKNWEFOIWNEFOIN",
+        "description" : "This is the description of our first game. I'm not sure what the game will be yet, so the desciption will be suitably vague. This game is very fun and will provide you and your friends with a great deal of enjoyment. You should play this game. Everyone will like it. It is a great game for any kind of party or social gathering. Please give this game a good rating.",
+        "controls" : "Once again, since I don't know the game, I don't really knwo the controlls. But I'll give it a shot anyway. The controller has several buttons. Each button does something in the game. When you press a button you will be playing the game, and doing different things. These things will help you win the game and impress your friends.",
+        "rating" : 3.67,
+        "votes" : 2367
+    }
+}

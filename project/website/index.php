@@ -98,13 +98,13 @@
                 
                 <ol class="carousel-indicators">
                     <?php
-                        $index = 0;
                         $class = "class='active'";
                         $gameList = fopen("game-list.txt", "r");
-
-                        while($name = fgets($gameList)){
-                            echo "<li data-target='#game-menu' data-slide-to='$index' $class></li>";
-                            $index++;
+                        $gameString = file_get_contents("game-info.json");
+                        $game_json = (array) json_decode($gameString, true);
+                    
+                        for($i = 0; $i < sizeof($game_json); $i++){
+                            echo "<li data-target='#game-menu' data-slide-to='$i' $class></li>";
                             $class = "";
                         }
                     ?>
@@ -113,33 +113,36 @@
                 <div class="carousel-inner" role="listbox">
                     
                     <?php
-                        $index = 0;
                         $class = "active";
-                        $gameList = fopen("game-list.txt", "r");
-
-                        while($name = fgets($gameList)){
+                    
+                        foreach($game_json as $game){
                             echo "
                             <div class='carousel-game well item $class'>
-                                <h2 class='title'>$name</h2>                                
+                                <h2 class='title' style='margin-left: 5vh; margin-bottom: 3vh'>".$game['name']."</h2>                           
                                 
-                                <div class='gallery col-md-6'>
-                                    <img src='http://r.ddmcdn.com/s_f/o_1/cx_633/cy_0/cw_1725/ch_1725/w_720/APL/uploads/2014/11/too-cute-doggone-it-video-playlist.jpg'>
+                                <div class='game-page gallery col-md-6'>";
+                                
+                                foreach($game['gallery'] as $source){
+                                    echo "<img class='gallery-image' src='$source'>";
+                                }
+                                    
+                            echo "
                                 </div>
                                 
                                 <div class='col-md-6'>
-                                    <div class='description col-md-12'>
+                                    <div class='game-page description col-md-12'>
                                         <h4>Description</h4>
+                                        <p>".$game['description']."</p>
                                     </div>
 
-                                    <div class='controls col-md-12'>
+                                    <div class='game-page controls col-md-12'>
                                         <h4>Controls</h4>
+                                        <p>".$game['controls']."</p>
                                     </div>
                                 </div>
                             </div>
-                            
-                            
                             ";
-                            $index++;
+                            
                             $class = "";
                         }
                     ?>
