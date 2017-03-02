@@ -4,10 +4,12 @@
 
 //DynamicObject
 //Object that represents a single moving/dynamic sprite
-function DynamicObject(drawFunction, canv, params){
+function DynamicObject(id, drawFunction, canv, params, update){
+	this.id = id;
 	this.params = params; //params should be a list of ids that correspond to the game's parameter id list
 	this.canv = canv;
 	this.draw = drawFunction;
+	this.update = update;	//function to update position/parameters of object
 	this.expired = false; //set expired to true when object is ready to be deleted
 }
 
@@ -51,6 +53,7 @@ function Canvas(canv, game){
 		var i = 0;
 		var boundary = this.dynamicObjects.length;
 		while(i < boundary){
+			this.dynamicObjects[i].update();
 			if(this.dynamicObjects[i].expired){
 				this.dynamicObjects.splice(i,1);
 				boundary--;
@@ -103,6 +106,7 @@ function Game(id){
 
 	this.receiveControls = function(){
 		//TODO: Communicate with server to obtain controller input
+		
 		var controls = null;
 		this.controlHandler(controls);
 	}
