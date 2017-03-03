@@ -83,7 +83,7 @@ function paddleUpdate(){
 
 function setupGame(){
     //Create game and add a canvas
-    var pongGame = new Game(0);
+    var pongGame = new Game(2,2);
     pongGame.addCanvas("defCanv", 600, 600, "border: 1px solid black");
     pongGame.canvs["defCanv"].setBaseState();
     //add some parameters that we need for our game
@@ -99,23 +99,20 @@ function setupGame(){
         "p1_yPos" : 300,
         "p1_vel" : 0
     }
-    var paddle1 = new DynamicObject("p1", paddleDraw, pongGame.canvs["defCanv"], paddle1Params, paddleUpdate);
-    pongGame.canvs["defCanv"].addGameObject(paddle1);
+    pongGame.canvs["defCanv"].addDynamicObject("p1", paddleDraw, paddle1Params, paddleUpdate);
     var paddle2Params = {
         "p2_xPos" : 590,
         "p2_yPos" : 300,
         "p2_vel" : 0
     }
-    var paddle2 = new DynamicObject("p2", paddleDraw, pongGame.canvs["defCanv"], paddle2Params, paddleUpdate);
-    pongGame.canvs["defCanv"].addGameObject(paddle2);
+    pongGame.canvs["defCanv"].addDynamicObject("p2", paddleDraw, paddle2Params, paddleUpdate);
     var startingAngle = Math.random()*(2*Math.PI);
     var ballParams = {
         "b_xPos" : 300,
         "b_yPos" : 300,
         "b_rayAngle" : startingAngle
     }
-    var ball = new DynamicObject("b", ballDraw, pongGame.canvs["defCanv"], ballParams, ballUpdate);
-    pongGame.canvs["defCanv"].addGameObject(ball);
+    pongGame.canvs["defCanv"].addDynamicObject("b", ballDraw, ballParams, ballUpdate);
 
     //Create our control handler
     pongGame.setControlHandler(function(controls){

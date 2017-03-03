@@ -4,12 +4,12 @@
 
 //DynamicObject
 //Object that represents a single moving/dynamic sprite
-function DynamicObject(id, drawFunction, canv, params, update){
+function DynamicObject(id, drawFunction, canv, params, updateFunction){
 	this.id = id;
 	this.params = params; //params should be a list of ids that correspond to the game's parameter id list
 	this.canv = canv;
 	this.draw = drawFunction;
-	this.update = update;	//function to update position/parameters of object
+	this.update = updateFunction;	//function to update position/parameters of object
 	this.expired = false; //set expired to true when object is ready to be deleted
 }
 
@@ -27,7 +27,8 @@ function Canvas(canv, game){
 		this.baseState = this.ctx.getImageData(0, 0, this.htmlCanv.width, this.htmlCanv.height);
 	}
 
-	this.addGameObject = function(obj){
+	this.addDynamicObject = function(id, drawFunction, params, updateFunction){
+		var obj = new DynamicObject(id, drawFunction, this, params, updateFunction);
 		for (var prop in obj.params) {
 	    if (obj.params.hasOwnProperty(prop)) {
 	    		if(!this.game.params.hasOwnProperty(prop)){
@@ -72,11 +73,9 @@ function Canvas(canv, game){
 
 //Game Object
 //Master object for a unique game instance
-function Game(id, minPlayers, maxPlayers, lobbyTimeout){
-	this.id = id;
+function Game(minPlayers, maxPlayers){
 	this.minPlayers = minPlayers;
 	this.maxPlayers = maxPlayers;
-	this.lobbyTimeout = lobbyTimeout;
 	this.params = {};
 	this.controlHandler = null;
 	this.canvs = [];
