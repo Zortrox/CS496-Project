@@ -17,7 +17,7 @@ function ballUpdate(){
     var newX = startX + Math.cos(angle)*this.canv.game.params.ballVelocity;
     var newY = startY + Math.sin(angle)*this.canv.game.params.ballVelocity;
     //check for collisions/out of bounds/etc.
-    if(newX < 5 || newX > (this.canv.htmlCanv.width - 5)){
+    if(newX < 1 || newX > (this.canv.htmlCanv.width - 1)){
         //someone scored
         if(newX < 5){
             alert("Player 2 scores!");
@@ -27,8 +27,8 @@ function ballUpdate(){
         newX = this.canv.htmlCanv.width/2;
         newY = this.canv.htmlCanv.height/2;
         this.canv.game.params[this.id+"_rayAngle"] = Math.random() * (2*Math.PI);
-    } else if(newX < 15 || newX > (this.canv.htmlCanv.width - 15)){
-        if(newX < 10){
+    } else if((newX < 15 && newX > 9) || (newX > (this.canv.htmlCanv.width - 15) && newX < (this.canv.htmlCanv.width - 9))){
+        if(newX < 15){
             //check for collision with p1 paddle
             if(Math.abs(newY - this.canv.game.params["p1_yPos"]) < this.canv.game.params.paddleHeight/2){
                 //reflect off paddle
@@ -37,6 +37,13 @@ function ballUpdate(){
                 } else {
                     this.canv.game.params[this.id+"_rayAngle"] = Math.PI - angle;
                 }
+
+                if(newY - this.canv.game.params["p1_yPos"] < (-1)*(this.canv.game.params.paddleHeight/4)){
+                    this.canv.game.params[this.id+"_rayAngle"] -= Math.PI/6;
+                } else if (newY - this.canv.game.params["p1_yPos"] > (this.canv.game.params.paddleHeight/4)){
+                    this.canv.game.params[this.id+"_rayAngle"] += Math.PI/6;
+                }
+                newX = 15;
             }
         } else {
             //check for collision with p2 paddle
@@ -47,10 +54,17 @@ function ballUpdate(){
                 } else {
                     this.canv.game.params[this.id+"_rayAngle"] = Math.PI - angle;
                 }
+
+                if(newY - this.canv.game.params["p2_yPos"] < (-1)*(this.canv.game.params.paddleHeight/4)){
+                    this.canv.game.params[this.id+"_rayAngle"] += Math.PI/6;
+                } else if (newY - this.canv.game.params["p2_yPos"] > (this.canv.game.params.paddleHeight/4)){
+                    this.canv.game.params[this.id+"_rayAngle"] -= Math.PI/6;
+                }
+                newX = (this.canv.htmlCanv.width - 15);
             }
         }
     } else {
-        if(newY < 5 || newY > (this.canv.htmlCanv.height - 10)){
+        if(newY < 5 || newY > (this.canv.htmlCanv.height - 5)){
             //reflect off horizontal ceiling/floor
             this.canv.game.params[this.id+"_rayAngle"] = (2*Math.PI) - angle;
         }
@@ -74,7 +88,7 @@ function paddleDraw(){
 
 function paddleUpdate(){
     var startY = this.canv.game.params[this.id+"_yPos"];
-    var newY = this.canv.game.params[this.id+"_vel"]*this.canv.game.params.paddleVelocity;
+    var newY = this.canv.game.params[this.id+"_vel"]*this.canv.game.params.paddleVelocity + startY;
     if(newY < this.canv.game.params.paddleHeight/2 || newY > (this.canv.htmlCanv.height - this.canv.game.params.paddleHeight/2)){
         newY = startY;
     }
@@ -83,15 +97,16 @@ function paddleUpdate(){
 
 function setupGame(){
     //Create game and add a canvas
-    var pongGame = new Game(2,2);
+    var pongGame = new Game(2,2,"updownkeyboard");
+    pongGame.startLobby();
     pongGame.addCanvas("defCanv", 600, 600, "border: 1px solid black");
     pongGame.canvs["defCanv"].setBaseState();
     //add some parameters that we need for our game
     pongGame.addParam("paddleWidth", 5);
     pongGame.addParam("paddleHeight", 70);
     pongGame.addParam("ballRadius", 5);
-    pongGame.addParam("ballVelocity", 4);
-    pongGame.addParam("paddleVelocity", 3);
+    pongGame.addParam("ballVelocity", 7);
+    pongGame.addParam("paddleVelocity", 5);
 
     //add two paddles and a ball
     var paddle1Params = {
@@ -117,8 +132,13 @@ function setupGame(){
     //Create our control handler
     pongGame.setControlHandler(function(controls){
         // the shape for this game's controls will be [x, y] where x = player 1's control, y = player 2's control
-        this.params["p1_vel"] = controls[0];
-        this.params["p2_vel"] = controls[1];
+        // 0 will signify no change
+        if(controls[0] !== 0){
+            this.params["p1_vel"] = controls[0];
+        }
+        if(controls[1] !== 0){
+            this.params["p2_vel"] = controls[1];
+        }
     });
 
 

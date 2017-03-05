@@ -1,5 +1,12 @@
 //Game API
 
+/*
+if(port_address === null){
+	console.log("Terminating due to lack of lobby space");
+	throw new Error();
+}
+*/
+
 //-------------------------------------------------------------------------------------
 
 //DynamicObject
@@ -73,33 +80,54 @@ function Canvas(canv, game){
 
 //Game Object
 //Master object for a unique game instance
-function Game(minPlayers, maxPlayers){
+function Game(minPlayers, maxPlayers, controllerID){
 	var minPlayers = minPlayers;
 	var maxPlayers = maxPlayers;
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
-	var controlHandler = null;
 	var active = true;
+	var gameStarter = null;
+	var lobbyComplete = false;
+	var controllerID = controllerID;
+	var gameServerSocket = null;
+	var portNumber = null;
 	this.playerCount = 0;
 	this.params = {};
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
+	this.controlHandler = null;
 
-	function receiveControls(){
-		//TODO: Communicate with server to obtain controller input
-		
-		var controls = null;
-		this.controlHandler(controls);
+	function setupControls(obj){
+		/*
+		//TODO: setup event based control handling from gameServerSocket
+		gameServerSocket.onmessage = function(msg){
+			this.controlHandler(msg.data);
+		}
+		*/
+
+		//sample for Pong
+		window.onkeydown = function(e){
+			var control = null;
+			if(e.key === "ArrowUp"){
+				control = [0,-1];
+			} else if(e.key === "ArrowDown"){
+				control = [0,1];
+			} else if(e.key === "w"){
+				control = [-1,0];
+			} else if(e.key === "s"){
+				control = [1,0];
+			} else {
+				control = [0,0];
+				return;
+			}
+			obj.controlHandler(control);
+		}
 	}
 
 	function gameRefresh(obj){
 		for(canv in obj.canvs){
 			obj.canvs[canv].updateCanvas();	
 		}
-	}
-
-	function startLobby(){
-		//TODO: do lobby stuff
 	}
 
 	function gameLoop(obj){
@@ -132,6 +160,21 @@ function Game(minPlayers, maxPlayers){
 		this.params[""+id] = defValue;
 	}
 
+	this.startLobby = function(){
+		//do lobby stuff
+		/*
+		gameServerSocket = new WebSocket(port_address);
+		var introPacket = {
+			"minPlayers" : minPlayers,
+			"maxPlayers" : maxPlayers,
+			"controllerID" : controllerID
+		}
+		gameServerSocket.send(JSON.stringify(introPacket));
+		//TODO: Wait until message is received from game server saying game is ready to move on
+		*/
+		lobbyComplete = true;
+	}
+
 	this.setFrameRate = function(num){
 		frame_rate = num;
 	}
@@ -141,8 +184,11 @@ function Game(minPlayers, maxPlayers){
 	}
 
 	this.startGame = function(){
-		startLobby();
-		//Once lobby stuff is done:
+		//ensure lobbying has taken place
+		if(!lobbyComplete){
+			this.startLobby();
+		}
+		setupControls(this);
 		var obj = this;
 		setTimeout(function(){
 			gameLoop(obj);
