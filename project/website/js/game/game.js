@@ -18,13 +18,33 @@ function DynamicObject(id, drawFunction, canv, params, updateFunction){
 //Canvas Object
 //Object that represents a single display region
 function Canvas(canv, game){
+	var baseState = null;
 	this.htmlCanv = canv;
 	this.game = game;
 	this.ctx = this.htmlCanv.getContext("2d");
 	this.dynamicObjects = [];
 
+	function resetToBaseState(obj){
+		obj.ctx.putImageData(baseState, 0, 0);
+	}
+
+	function drawObjects(obj){
+		var i = 0;
+		var boundary = obj.dynamicObjects.length;
+		while(i < boundary){
+			obj.dynamicObjects[i].update();
+			if(obj.dynamicObjects[i].expired){
+				obj.dynamicObjects.splice(i,1);
+				boundary--;
+			} else {
+				obj.dynamicObjects[i].draw();
+				i++;
+			}
+		}
+	}
+
 	this.setBaseState = function(){
-		this.baseState = this.ctx.getImageData(0, 0, this.htmlCanv.width, this.htmlCanv.height);
+		baseState = this.ctx.getImageData(0, 0, this.htmlCanv.width, this.htmlCanv.height);
 	}
 
 	this.addDynamicObject = function(id, drawFunction, params, updateFunction){
@@ -33,9 +53,6 @@ function Canvas(canv, game){
 	    if (obj.params.hasOwnProperty(prop)) {
 	    		if(!this.game.params.hasOwnProperty(prop)){
 	        	this.game.params[""+prop] = obj.params[""+prop];
-	        	if(prop === "p1_xPos"){
-	        		console.log(obj.params[""+prop]);
-	        	}
 	      	} else {
 	      		//TODO: throw error for repeated property
 	      	}
@@ -44,28 +61,11 @@ function Canvas(canv, game){
 		this.dynamicObjects.push(obj);
 	}
 
+	//pseudo-private (should only be accessible to Game)
+
 	this.updateCanvas = function(){
-		this.resetToBaseState();
-		this.drawObjects();
-	}
-
-	this.resetToBaseState = function(){
-		this.ctx.putImageData(this.baseState, 0, 0);
-	}
-
-	this.drawObjects = function(){
-		var i = 0;
-		var boundary = this.dynamicObjects.length;
-		while(i < boundary){
-			this.dynamicObjects[i].update();
-			if(this.dynamicObjects[i].expired){
-				this.dynamicObjects.splice(i,1);
-				boundary--;
-			} else {
-				this.dynamicObjects[i].draw();
-				i++;
-			}
-		}
+		resetToBaseState(this);
+		drawObjects(this);
 	}
 }
 
@@ -74,16 +74,43 @@ function Canvas(canv, game){
 //Game Object
 //Master object for a unique game instance
 function Game(minPlayers, maxPlayers){
-	this.minPlayers = minPlayers;
-	this.maxPlayers = maxPlayers;
+	var minPlayers = minPlayers;
+	var maxPlayers = maxPlayers;
+	var htmlBod = document.getElementsByTagName("body")[0];
+	var frame_rate = 33;
+	var controlHandler = null;
+	var active = true;
+	this.playerCount = 0;
 	this.params = {};
-	this.controlHandler = null;
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
-	this.frame_rate = 10;
-	this.active = true;
-	this.htmlBod = document.getElementsByTagName("body")[0];
-	
+
+	function receiveControls(){
+		//TODO: Communicate with server to obtain controller input
+		
+		var controls = null;
+		this.controlHandler(controls);
+	}
+
+	function gameRefresh(obj){
+		for(canv in obj.canvs){
+			obj.canvs[canv].updateCanvas();	
+		}
+	}
+
+	function startLobby(){
+		//TODO: do lobby stuff
+	}
+
+	function gameLoop(obj){
+		if(active){
+			gameRefresh(obj);
+			setTimeout(function(){
+				gameLoop(obj);
+			}, 1000/frame_rate);
+		}
+	}
+
 	//all HTML element insertions (Canvas or other) insert the new element as the first element in body
 	//canvas is created using given style specs
 	this.addCanvas = function(canvID,canvWidth,canvHeight,canvStyle){
@@ -93,11 +120,11 @@ function Game(minPlayers, maxPlayers){
 		canv.height = canvHeight;
 		canv.style = canvStyle;
 		this.canvs[""+canvID] = new Canvas(canv, this);
-		this.htmlBod.insertBefore(canv, this.htmlBod.firstChild);
+		htmlBod.insertBefore(canv, htmlBod.firstChild);
 	}
-	
+
 	this.addHTMLObject = function(obj,objID){
-		document.getElementsByTagName("body")[0].insertBefore(obj,this.htmlBod.firstChild);
+		document.getElementsByTagName("body")[0].insertBefore(obj,htmlBod.firstChild);
 		this.htmlObjects[""+objID] = obj;
 	}
 
@@ -106,39 +133,19 @@ function Game(minPlayers, maxPlayers){
 	}
 
 	this.setFrameRate = function(num){
-		this.frame_rate = num;
-	}
-
-	this.receiveControls = function(){
-		//TODO: Communicate with server to obtain controller input
-		
-		var controls = null;
-		this.controlHandler(controls);
+		frame_rate = num;
 	}
 
 	this.setControlHandler = function(f){
 		this.controlHandler = f;
 	}
 
-	this.gameRefresh = function(){
-		for(canv in this.canvs){
-			this.canvs[canv].updateCanvas();
-		}
-	}
-
 	this.startGame = function(){
+		startLobby();
+		//Once lobby stuff is done:
 		var obj = this;
 		setTimeout(function(){
-			obj.gameLoop(obj);
-		}, obj.frame_rate);
-	}
-
-	this.gameLoop = function(obj){
-		if(obj.active){
-			obj.gameRefresh();
-			setTimeout(function(){
-				obj.gameLoop(obj);
-			}, obj.frame_rate);
-		}
+			gameLoop(obj);
+		}, 1000/frame_rate);
 	}
 }

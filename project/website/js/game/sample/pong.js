@@ -20,9 +20,9 @@ function ballUpdate(){
     if(newX < 5 || newX > (this.canv.htmlCanv.width - 5)){
         //someone scored
         if(newX < 5){
-            console.log("Player 2 scores!");
+            alert("Player 2 scores!");
         } else {
-            console.log("Player 1 scores!");
+            alert("Player 1 scores!");
         }
         newX = this.canv.htmlCanv.width/2;
         newY = this.canv.htmlCanv.height/2;
@@ -88,7 +88,7 @@ function setupGame(){
     pongGame.canvs["defCanv"].setBaseState();
     //add some parameters that we need for our game
     pongGame.addParam("paddleWidth", 5);
-    pongGame.addParam("paddleHeight", 20);
+    pongGame.addParam("paddleHeight", 70);
     pongGame.addParam("ballRadius", 5);
     pongGame.addParam("ballVelocity", 4);
     pongGame.addParam("paddleVelocity", 3);
