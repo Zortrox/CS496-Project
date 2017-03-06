@@ -91,6 +91,7 @@ function paddleUpdate(){
     var newY = this.canv.game.params[this.id+"_vel"]*this.canv.game.params.paddleVelocity + startY;
     if(newY < this.canv.game.params.paddleHeight/2 || newY > (this.canv.htmlCanv.height - this.canv.game.params.paddleHeight/2)){
         newY = startY;
+        this.canv.game.params[this.id+"_vel"] = 0;
     }
     this.canv.game.params[this.id+"_yPos"] = newY;
 }
@@ -134,10 +135,14 @@ function setupGame(){
         // the shape for this game's controls will be [x, y] where x = player 1's control, y = player 2's control
         // 0 will signify no change
         if(controls[0] !== 0){
-            this.params["p1_vel"] = controls[0];
+            if(controls[0] !== this.params["p1_vel"]){
+                this.params["p1_vel"] += controls[0];
+            }
         }
         if(controls[1] !== 0){
-            this.params["p2_vel"] = controls[1];
+            if(controls[1] !== this.params["p2_vel"]){
+                this.params["p2_vel"] += controls[1];
+            }
         }
     });
 
