@@ -171,7 +171,11 @@ function Game(minPlayers, maxPlayers, controllerID){
 		}
 		gameServerSocket.send(JSON.stringify(introPacket));
 		//TODO: Wait until message is received from game server saying game is ready to move on
+		//message received should contain number of players
+		var numPlayers
 		*/
+		var numPlayers = 2;
+		this.playerCount = numPlayers;
 		lobbyComplete = true;
 	}
 
