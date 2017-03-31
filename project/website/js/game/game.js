@@ -1,11 +1,8 @@
 //Game API
 
-/*
-if(port_address === null){
-	console.log("Terminating due to lack of lobby space");
-	throw new Error();
-}
-*/
+
+var MSG_TYPE_NEW_PLAYER_JOIN = 1;
+var MSG_TYPE_CONTROL_DATA = 2;
 
 //-------------------------------------------------------------------------------------
 
@@ -80,15 +77,14 @@ function Canvas(canv, game){
 
 //Game Object
 //Master object for a unique game instance
-function Game(minPlayers, maxPlayers, controllerID){
-	var minPlayers = minPlayers;
-	var maxPlayers = maxPlayers;
+//When the Game developer submits the game, they will be responsible for specifying 
+//min players, max players, and corresponding controller ID
+function Game(){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
 	var active = true;
 	var gameStarter = null;
 	var lobbyComplete = false;
-	var controllerID = controllerID;
 	var gameServerSocket = null;
 	var portNumber = null;
 	this.playerCount = 0;
@@ -98,13 +94,6 @@ function Game(minPlayers, maxPlayers, controllerID){
 	this.controlHandler = null;
 
 	function setupControls(obj){
-		/*
-		//TODO: setup event based control handling from gameServerSocket
-		gameServerSocket.onmessage = function(msg){
-			this.controlHandler(msg.data);
-		}
-		*/
-
 		//sample for Pong
 		window.onkeydown = function(e){
 			var control = null;
@@ -160,23 +149,31 @@ function Game(minPlayers, maxPlayers, controllerID){
 		this.params[""+id] = defValue;
 	}
 
-	this.startLobby = function(){
+	this.startLobby = function(callback){
 		//do lobby stuff
-		/*
-		gameServerSocket = new WebSocket(port_address);
-		var introPacket = {
-			"minPlayers" : minPlayers,
-			"maxPlayers" : maxPlayers,
-			"controllerID" : controllerID
+		var message = {
+			name:getCookie("name"),
+			room:getCookie("gameroom"),
+			uuid:getCookie("uuid")
 		}
-		gameServerSocket.send(JSON.stringify(introPacket));
-		//TODO: Wait until message is received from game server saying game is ready to move on
-		//message received should contain number of players
-		var numPlayers
-		*/
+
+		gameServerSocket = new WebSocket("http://digibara.com/ws");
+		var _this = this;
+		gameServerSocket.onmessage = function(msg){
+			var pack = JSON.parse(msg.data);
+			if(pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+				_this.playerCount += 1;
+				//if-else if-else block to check for starting game
+				//call "callback" when its time to start
+			} else if(pack.msgtype == MSG_TYPE_CONTROL_DATA){
+				_this.controlHandler(pack);
+			}
+		}
+
+		//temp code to make run
 		var numPlayers = 2;
 		this.playerCount = numPlayers;
-		lobbyComplete = true;
+		callback();
 	}
 
 	this.setFrameRate = function(num){
