@@ -1,8 +1,13 @@
 //Game API
 
+var MSG_TYPE_START_GAME = 0;
+var MSG_TYPE_END_GAME = 1;
+var MSG_TYPE_NEW_PLAYER_JOIN = 2;
+var MSG_TYPE_CONTROL_DATA = 3;
 
-var MSG_TYPE_NEW_PLAYER_JOIN = 1;
-var MSG_TYPE_CONTROL_DATA = 2;
+var GAME_CREATED = 0;
+var GAME_LOBBYING = 1;
+var GAME_ACTIVE = 2;
 
 //-------------------------------------------------------------------------------------
 
@@ -78,8 +83,8 @@ function Canvas(canv, game){
 //Game Object
 //Master object for a unique game instance
 //When the Game developer submits the game, they will be responsible for specifying 
-//min players, max players, and corresponding controller ID
-function Game(){
+//min players, max players
+function Game(var minP, var maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
 	var active = true;
@@ -87,6 +92,9 @@ function Game(){
 	var lobbyComplete = false;
 	var gameServerSocket = null;
 	var portNumber = null;
+	var minPlayers = minP;
+	var maxPlayers = maxP;
+	var gameStatus = GAME_CREATED;
 	this.playerCount = 0;
 	this.params = {};
 	this.canvs = [];
@@ -158,14 +166,35 @@ function Game(){
 		}
 
 		gameServerSocket = new WebSocket("http://digibara.com/ws");
+		gameServerSocket.onopen = function(){
+			//this message does not follow the format used by other messages, used only for initialization
+			gameServerSocket.send(JSON.stringify(message));
+		}
 		var _this = this;
+		var _maxPlayers = maxPlayers;
+		var _minPlayers = minPlayers;
+		var _gameStatus = gameStatus;
 		gameServerSocket.onmessage = function(msg){
+			//TODO: handle parse error
 			var pack = JSON.parse(msg.data);
-			if(pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+				//TODO: add player's UUID to array of players
 				_this.playerCount += 1;
-				//if-else if-else block to check for starting game
-				//call "callback" when its time to start
-			} else if(pack.msgtype == MSG_TYPE_CONTROL_DATA){
+				if(_this.playerCount == _maxPlayers){
+					var m_pack = {
+						msgtype: MSG_TYPE_START_GAME,
+						uuid: getCookie("uuid"),
+						data: 0
+					}
+					//start game
+					gameServerSocket.send(JSON.stringify(m_pack));
+					callback();
+				} else if(_this.playerCount == _minPlayers){
+					//make game eligible for starting
+
+				}
+			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
+				//TODO: verify UUID of sending player
 				_this.controlHandler(pack);
 			}
 		}
