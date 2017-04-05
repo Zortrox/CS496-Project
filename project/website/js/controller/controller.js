@@ -1,3 +1,5 @@
+/*
+TODO: what is this?
 var ws;
 
 function WebSocketSetup() {
@@ -32,3 +34,23 @@ function WebSocketSetup() {
 }
 
 WebSocketSetup();
+*/
+
+function Controller(){
+	var controllerServerSocket = null;
+	this.data = {};
+
+	this.setup = function(){
+		//special initilization message
+		var message = {
+			name:getCookie("name"),
+			room:getCookie("gameroom"),
+			uuid:getCookie("uuid")
+		}
+		controllerServerSocket = new WebSocket("http://digibara.com/ws");
+		controllerServerSocket.onopen = function(){
+			controllerServerSocket.send(JSON.stringify(message));
+		}
+
+	}
+}
