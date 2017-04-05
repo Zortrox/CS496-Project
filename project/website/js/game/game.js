@@ -8,6 +8,7 @@ var MSG_TYPE_CONTROL_DATA = 3;
 var GAME_CREATED = 0;
 var GAME_LOBBYING = 1;
 var GAME_ACTIVE = 2;
+var GAME_ENDED = 3;
 
 //-------------------------------------------------------------------------------------
 
@@ -88,10 +89,8 @@ function Game(var minP, var maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
 	var active = true;
-	var gameStarter = null;
 	var lobbyComplete = false;
 	var gameServerSocket = null;
-	var portNumber = null;
 	var minPlayers = minP;
 	var maxPlayers = maxP;
 	var gameStatus = GAME_CREATED;
@@ -173,6 +172,7 @@ function Game(var minP, var maxP){
 		var _maxPlayers = maxPlayers;
 		var _minPlayers = minPlayers;
 		var _gameStatus = gameStatus;
+		lobbyComplete = true;
 		gameServerSocket.onmessage = function(msg){
 			//TODO: handle parse error
 			var pack = JSON.parse(msg.data);
@@ -218,5 +218,17 @@ function Game(var minP, var maxP){
 		setTimeout(function(){
 			gameLoop(obj);
 		}, 1000/frame_rate);
+	}
+
+	this.endGame = function(callback){
+		active = false;
+		gameStatus = GAME_ENDED;
+		var msg = {
+			msgtype: MSG_TYPE_END_GAME,
+			uuid: getCookie("uuid"),
+			data: 0
+		}
+		gameServerSocket.send(JSON.stringify(msg));
+		callback();
 	}
 }
