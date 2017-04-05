@@ -1,19 +1,17 @@
 #pragma once
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN 1
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#define SOCKET int
+#define SOCKET_ERROR -1
 #endif
-
-#include <string>
 #include <atomic>
+#include <string>
 #include "ThreadQueue.hpp"
-#include "json11-master\json11.hpp"
 
 #define ROOM_PORT_START 3000
 #define PHP_PORT 2000
@@ -28,8 +26,9 @@ public:
 	static std::string decodeMessage(std::string msg);
 	static std::string encodeMessage(std::string msg);
 	static std::string handshakeResponse(std::string msg);
-	static void newConnection(SOCKET sock);
-	static void newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum);
+	static bool newConnection(SOCKET sock);
+	static std::string getPHPData(SOCKET sock);
+	static void sendPHPData(SOCKET sock, std::string roomData);
 	static void listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic<bool>* bExit);
 	static void closeSocket(SOCKET sock);
 

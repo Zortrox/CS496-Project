@@ -1,7 +1,9 @@
 #include "WebSocketFunctions.h"
 
 #include <iostream>
-#include "sha1-master\sha1.hpp"
+#include <unistd.h>
+#include <string.h>
+#include "sha1-master/sha1.hpp"
 
 static const std::string WS_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 static const std::string BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -24,7 +26,7 @@ std::string WSF::decodeMessage(std::string msg) {
 
 		int indexFirstDataByte = indexFirstMask + 4;
 		for (size_t i = indexFirstDataByte, j = 0; i < msg.length(); i++, j++) {
-			decoded += (char)(msg[i] ^ masks[j % 4]);
+			decoded += (msg[i] ^ masks[j % 4]);
 		}
 	}
 	else if ((firstByte & 0xF) == MSG_OPCODE_CLOSE) { //if first byte is "xxxx 1000"
@@ -79,7 +81,7 @@ std::string WSF::handshakeResponse(std::string msg) {
 	std::string strHash = hexDecode(checksum.final());
 
 	unsigned char arrHash[200] = { 0 };
-	strcpy_s((char*)arrHash, 200, strHash.c_str());
+	strcpy((char*)arrHash, strHash.c_str());
 	strHash = base64Encode(arrHash, strHash.length());
 
 	strSendMsg = "HTTP/1.1 101 Switching Protocols\r\n"
@@ -92,65 +94,58 @@ std::string WSF::handshakeResponse(std::string msg) {
 }
 
 //receive and send web socket handshake
-void WSF::newConnection(SOCKET sock) {
+bool WSF::newConnection(SOCKET sock) {
 	int n;
 	char buffer[1024] = { 0 };
 	n = recv(sock, buffer, 1023, 0);
 	//n = read(sock, buffer, 255);
 	if (n < 0) {
-		perror("ERROR reading from socket");
-		return; //listen for new connections
+		std::cout << "ERROR reading from socket" << std::endl;
+		return false; //listen for new connections
 	}
 
-	//printf("Here is the message: %s\n", buffer);
 	std::string strHandshake = WSF::handshakeResponse(std::string(buffer));
 	n = send(sock, strHandshake.c_str(), strHandshake.length(), 0);
 	//send(sock, "HI", 2, 0);
 	//n = write(sock, "I got your message", 18);
 
 	if (n < 0) {
-		perror("ERROR writing to socket");
-		return; //listen for new connections
+		std::cout << "ERROR writing to socket" << std::endl;
+		return false; //listen for new connections
 	}
+
+    return true;
 }
 
-void WSF::newPHPRequest(SOCKET sock, json11::Json* phpData, int roomNum) {
+std::string WSF::getPHPData(SOCKET sock) {
 	int n;
+
+	//max wait time for PHP data
+	struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 500000;    //500 milliseconds
+	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
 
 	char buffer[1024] = { 0 };
 	n = recv(sock, buffer, 1023, 0);
-	//n = read(sock, buffer, 255);
 
 	if (n < 0) {
-		perror("ERROR reading from socket");
+		perror("recv");
+		std::cout << "ERROR reading from socket" << std::endl;
+		return "";
 	}
 	else {
-		std::string strErr;
-		std::string strJson = "{\"name\":\"IDEK\","
-			"\"game\":1,"
-			"\"players\":5,"
-			"\"pass\":\"pika\"}";
-		(*phpData) = json11::Json::parse(strJson, strErr);
-		//*phpData = json11::Json::parse(std::string(buffer), strErr);
-
-		//add room number and port to room Json
-		json11::Json::object roomData = json11::Json::object((*phpData).object_items());
-		roomData["room"] = roomNum;
-		roomData["port"] = ROOM_PORT_START + roomNum;
-		(*phpData) = json11::Json{ roomData };
-
-		std::string strRoomData = (*phpData).dump();
-		n = send(sock, strRoomData.c_str(), strRoomData.length(), 0);
-		//send(sock, "HI", 2, 0);
-		//n = write(sock, "I got your message", 18);
-
-		if (n < 0) {
-			perror("ERROR writing to socket");
-		}
+		return std::string(buffer);
 	}
+}
 
-	//close sockets at the end
-	closeSocket(sock);
+void WSF::sendPHPData(SOCKET sock, std::string roomData) {
+	int n = send(sock, roomData.c_str(), roomData.length(), 0);
+
+	if (n < 0) {
+		perror("send");
+		std::cout << "ERROR writing to socket" << std::endl;
+	}
 }
 
 //add all connections to socket queue
@@ -159,9 +154,9 @@ void WSF::listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic
 	SOCKET sctListen = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	if (sctListen < 0) {
-		perror("ERROR opening socket");
+		std::cout << "ERROR opening socket" << std::endl;
 		std::cin.ignore();
-		exit(1);
+		return;
 	}
 
 	/* Initialize socket structure */
@@ -175,15 +170,19 @@ void WSF::listenConnections(ThreadQueue<SOCKET>* qSockets, int port, std::atomic
 	int iResult = bind(sctListen, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0;
 
 	if (iResult == SOCKET_ERROR) {
-		perror("ERROR on binding");
+		std::cout << "ERROR on binding" << std::endl;
 		std::cin.ignore();
-		exit(1);
+		return;
 	}
 
 	listen(sctListen, 5);
 
 	struct sockaddr_in cli_addr;
+#ifdef _WIN32
 	int clilen = sizeof(cli_addr);
+#else
+    socklen_t clilen = sizeof(cli_addr);
+#endif
 
 	while (!*bExit) {
 		SOCKET newConn = accept(sctListen, (sockaddr*)&cli_addr, &clilen);
@@ -199,7 +198,7 @@ void WSF::closeSocket(SOCKET sock) {
 #ifdef _WIN32
 	closesocket(sock);
 #else
-	close(sctListen);
+    close(sock);
 #endif
 }
 

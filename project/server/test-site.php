@@ -7,7 +7,7 @@ echo "<h2>TCP/IP Connection</h2>\n";
 $service_port = 2000;
 
 /* Get the IP address for the target host. */
-$address = "localhost";
+$address = "52.14.24.8";
 
 /* Create a TCP/IP socket. */
 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
