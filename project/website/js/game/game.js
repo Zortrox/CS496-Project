@@ -1,11 +1,13 @@
 //Game API
 
-/*
-if(port_address === null){
-	console.log("Terminating due to lack of lobby space");
-	throw new Error();
-}
-*/
+var MSG_TYPE_START_GAME = 0;
+var MSG_TYPE_END_GAME = 1;
+var MSG_TYPE_NEW_PLAYER_JOIN = 2;
+var MSG_TYPE_CONTROL_DATA = 3;
+
+var GAME_CREATED = 0;
+var GAME_LOBBYING = 1;
+var GAME_ACTIVE = 2;
 
 //-------------------------------------------------------------------------------------
 
@@ -80,31 +82,26 @@ function Canvas(canv, game){
 
 //Game Object
 //Master object for a unique game instance
-function Game(minPlayers, maxPlayers, controllerID){
-	var minPlayers = minPlayers;
-	var maxPlayers = maxPlayers;
+//When the Game developer submits the game, they will be responsible for specifying 
+//min players, max players
+function Game(var minP, var maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
 	var active = true;
 	var gameStarter = null;
 	var lobbyComplete = false;
-	var controllerID = controllerID;
 	var gameServerSocket = null;
 	var portNumber = null;
-	this.playerCount = 0;
+	var minPlayers = minP;
+	var maxPlayers = maxP;
+	var gameStatus = GAME_CREATED;
+	this.playerIDs = [];
 	this.params = {};
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
 	this.controlHandler = null;
 
 	function setupControls(obj){
-		/*
-		//TODO: setup event based control handling from gameServerSocket
-		gameServerSocket.onmessage = function(msg){
-			this.controlHandler(msg.data);
-		}
-		*/
-
 		//sample for Pong
 		window.onkeydown = function(e){
 			var control = null;
@@ -160,23 +157,47 @@ function Game(minPlayers, maxPlayers, controllerID){
 		this.params[""+id] = defValue;
 	}
 
-	this.startLobby = function(){
-		//do lobby stuff
-		/*
-		gameServerSocket = new WebSocket(port_address);
-		var introPacket = {
-			"minPlayers" : minPlayers,
-			"maxPlayers" : maxPlayers,
-			"controllerID" : controllerID
+	this.startLobby = function(callback){
+		//special initialization message
+		var message = {
+			name:getCookie("name"),
+			room:getCookie("gameroom"),
+			uuid:getCookie("uuid")
 		}
-		gameServerSocket.send(JSON.stringify(introPacket));
-		//TODO: Wait until message is received from game server saying game is ready to move on
-		//message received should contain number of players
-		var numPlayers
-		*/
-		var numPlayers = 2;
-		this.playerCount = numPlayers;
-		lobbyComplete = true;
+
+		gameServerSocket = new WebSocket("http://digibara.com/ws");
+		gameServerSocket.onopen = function(){
+			gameServerSocket.send(JSON.stringify(message));
+		}
+		var _this = this;
+		var _maxPlayers = maxPlayers;
+		var _minPlayers = minPlayers;
+		var _gameStatus = gameStatus;
+		gameServerSocket.onmessage = function(msg){
+			//TODO: handle parse error
+			var pack = JSON.parse(msg.data);
+			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+				//add player's UUID to array of players
+				_this.playerIDs.push(pack.uuid);
+				if(_this.playerIDs.length == _maxPlayers){
+					var m_pack = {
+						msgtype: MSG_TYPE_START_GAME,
+						uuid: getCookie("uuid"),
+						data: 0
+					}
+					//start game
+					gameServerSocket.send(JSON.stringify(m_pack));
+					callback();
+				} else if(_this.playerIDs.length == _minPlayers){
+					//TODO: make game eligible for starting with minPlayers < numPlayers < maxPlayers
+				}
+			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
+				//verify UUID of sending player
+				if(_this.playerIDs.indexOf(pack.uuid) >= 0){
+					_this.controlHandler(pack.uuid, pack.data);
+				}
+			}
+		}	
 	}
 
 	this.setFrameRate = function(num){
