@@ -95,7 +95,7 @@ function Game(var minP, var maxP){
 	var minPlayers = minP;
 	var maxPlayers = maxP;
 	var gameStatus = GAME_CREATED;
-	this.playerCount = 0;
+	this.playerIDs = [];
 	this.params = {};
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
@@ -158,7 +158,7 @@ function Game(var minP, var maxP){
 	}
 
 	this.startLobby = function(callback){
-		//do lobby stuff
+		//special initialization message
 		var message = {
 			name:getCookie("name"),
 			room:getCookie("gameroom"),
@@ -167,7 +167,6 @@ function Game(var minP, var maxP){
 
 		gameServerSocket = new WebSocket("http://digibara.com/ws");
 		gameServerSocket.onopen = function(){
-			//this message does not follow the format used by other messages, used only for initialization
 			gameServerSocket.send(JSON.stringify(message));
 		}
 		var _this = this;
@@ -178,9 +177,9 @@ function Game(var minP, var maxP){
 			//TODO: handle parse error
 			var pack = JSON.parse(msg.data);
 			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
-				//TODO: add player's UUID to array of players
-				_this.playerCount += 1;
-				if(_this.playerCount == _maxPlayers){
+				//add player's UUID to array of players
+				_this.playerIDs.push(pack.uuid);
+				if(_this.playerIDs.length == _maxPlayers){
 					var m_pack = {
 						msgtype: MSG_TYPE_START_GAME,
 						uuid: getCookie("uuid"),
@@ -189,20 +188,16 @@ function Game(var minP, var maxP){
 					//start game
 					gameServerSocket.send(JSON.stringify(m_pack));
 					callback();
-				} else if(_this.playerCount == _minPlayers){
-					//make game eligible for starting
-
+				} else if(_this.playerIDs.length == _minPlayers){
+					//TODO: make game eligible for starting with minPlayers < numPlayers < maxPlayers
 				}
 			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
-				//TODO: verify UUID of sending player
-				_this.controlHandler(pack);
+				//verify UUID of sending player
+				if(_this.playerIDs.indexOf(pack.uuid) >= 0){
+					_this.controlHandler(pack.uuid, pack.data);
+				}
 			}
-		}
-
-		//temp code to make run
-		var numPlayers = 2;
-		this.playerCount = numPlayers;
-		callback();
+		}	
 	}
 
 	this.setFrameRate = function(num){
