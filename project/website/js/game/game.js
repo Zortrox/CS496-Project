@@ -85,7 +85,7 @@ function Canvas(canv, game){
 //Master object for a unique game instance
 //When the Game developer submits the game, they will be responsible for specifying 
 //min players, max players
-function Game(var minP, var maxP){
+function Game(minP, maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
 	var active = true;
