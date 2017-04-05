@@ -164,7 +164,7 @@ function Game(minP, maxP){
 			uuid:getCookie("uuid")
 		}
 
-		gameServerSocket = new WebSocket("http://digibara.com/ws");
+		gameServerSocket = new WebSocket("ws://digibara.com/ws");
 		gameServerSocket.onopen = function(){
 			gameServerSocket.send(JSON.stringify(message));
 		}
