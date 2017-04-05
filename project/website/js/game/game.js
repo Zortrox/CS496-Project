@@ -85,7 +85,7 @@ function Canvas(canv, game){
 //Master object for a unique game instance
 //When the Game developer submits the game, they will be responsible for specifying 
 //min players, max players
-function Game(var minP, var maxP){
+function Game(minP, maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
 	var active = true;
@@ -164,7 +164,7 @@ function Game(var minP, var maxP){
 			uuid:getCookie("uuid")
 		}
 
-		gameServerSocket = new WebSocket("http://digibara.com/ws");
+		gameServerSocket = new WebSocket("ws://digibara.com/ws");
 		gameServerSocket.onopen = function(){
 			gameServerSocket.send(JSON.stringify(message));
 		}
