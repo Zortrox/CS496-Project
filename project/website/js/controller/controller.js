@@ -44,6 +44,14 @@ function Controller(){
 		this.htmlObjects[""+objID] = obj;
 	}
 
+	//takes in a string representing css for the page
+	this.setCSS = function(css){
+		var newStyle = document.createElement("style");
+		newStyle.type = "text/css";
+		newStyle.innerHTML = css;
+		document.getElementsByTagName("head")[0].appendChild(newStyle);
+	}
+
 	//sends the current state
 	this.sendState = function(){
 		this.sendMessage(this.data);
