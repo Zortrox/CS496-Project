@@ -138,6 +138,7 @@ function Game(minP, maxP){
 	}
 
 	this.startLobby = function(callback){
+		gameStatus = GAME_LOBBYING;
 		//special initialization message
 		var message = {
 			name:getCookie("name"),
@@ -168,6 +169,7 @@ function Game(minP, maxP){
 					}
 					//start game
 					gameServerSocket.send(JSON.stringify(m_pack));
+					_gameStatus = GAME_ACTIVE;
 					callback();
 				} else if(_this.playerIDs.length == _minPlayers){
 					//TODO: make game eligible for starting with minPlayers < numPlayers < maxPlayers
@@ -194,7 +196,6 @@ function Game(minP, maxP){
 		if(!lobbyComplete){
 			this.startLobby();
 		}
-		setupControls(this);
 		var obj = this;
 		setTimeout(function(){
 			gameLoop(obj);

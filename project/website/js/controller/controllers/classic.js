@@ -25,6 +25,35 @@ function setupController(){
 	controller.data["a"] = 0;
 	controller.data["b"] = 0;
 
+	var css = ' \
+	+ .arrowUp { \
+	  width: 0;  \
+	  height: 0;  \
+	  border-style: 10vw solid; \
+	  border: transparent transparent transparent black \
+	} \
+		 \
+	.arrowDown { \
+	  width: 0;  \
+	  height: 0;  \
+	  border-style: 10vw solid; \
+	  border: transparent transparent black transparent \
+	} \
+		\
+	.arrowRight {\
+	  width: 0; \
+	  height: 0; \
+	  border-style: 10vw solid; \
+	  border: transparent black transparent transparent \
+	}\
+	\
+	.arrowLeft {\
+	  width: 0; \
+	  height: 0; \
+	  border-style: 10vw solid; \
+	  border: black transparent transparent transparent \
+	}';
+	controller.setCSS(css);
 	
 }
 
