@@ -1,41 +1,3 @@
-/*
-TODO: what is this?
-var ws;
-
-function WebSocketSetup() {
-	if (window.WebSocket)
-	{
-		alert("WebSocket is supported by your Browser!");
-		
-		// Let us open a web socket
-		ws = new WebSocket("ws://localhost:3002");
-		
-		ws.onopen = function() {
-			// Web Socket is connected
-			ws.send("[[connected]]");
-		};
-		
-		ws.onmessage = function (evt) 
-		{ 
-			var received_msg = evt.data;
-			alert("Message is received...\n"+received_msg);
-		};
-		
-		ws.onclose = function()
-		{ 
-			// websocket is closed.
-		};
-	}
-	else
-	{
-		// The browser doesn't support WebSocket
-		alert("WebSocket NOT supported by your Browser!");
-	}
-}
-
-WebSocketSetup();
-*/
-
 //Controller API
 var MSG_TYPE_START_GAME = 0;
 var MSG_TYPE_END_GAME = 1;
@@ -52,6 +14,7 @@ function Controller(){
 	var controllerServerSocket = null;
 	var active = false;
 	this.data = {};
+	this.htmlObjects = [];
 
 	this.setup = function(){
 		//special initilization message
@@ -74,6 +37,11 @@ function Controller(){
 			}
 			//TODO: handle incoming messages from host - not first priority
 		}
+	}
+
+	this.addHTMLObject = function(obj,objID){
+		document.getElementsByTagName("body")[0].insertBefore(obj,htmlBod.firstChild);
+		this.htmlObjects[""+objID] = obj;
 	}
 
 	//sends the current state
