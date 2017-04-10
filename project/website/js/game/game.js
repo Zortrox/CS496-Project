@@ -88,6 +88,7 @@ function Canvas(canv, game){
 function Game(minP, maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
 	var frame_rate = 33;
+	//TODO: combine active and lobbyComplete 
 	var active = true;
 	var lobbyComplete = false;
 	var gameServerSocket = null;
@@ -99,26 +100,6 @@ function Game(minP, maxP){
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
 	this.controlHandler = null;
-
-	function setupControls(obj){
-		//sample for Pong
-		window.onkeydown = function(e){
-			var control = null;
-			if(e.key === "ArrowUp"){
-				control = [0,-1];
-			} else if(e.key === "ArrowDown"){
-				control = [0,1];
-			} else if(e.key === "w"){
-				control = [-1,0];
-			} else if(e.key === "s"){
-				control = [1,0];
-			} else {
-				control = [0,0];
-				return;
-			}
-			obj.controlHandler(control);
-		}
-	}
 
 	function gameRefresh(obj){
 		for(canv in obj.canvs){
@@ -157,6 +138,7 @@ function Game(minP, maxP){
 	}
 
 	this.startLobby = function(callback){
+		gameStatus = GAME_LOBBYING;
 		//special initialization message
 		var message = {
 			name:getCookie("name"),
@@ -187,6 +169,7 @@ function Game(minP, maxP){
 					}
 					//start game
 					gameServerSocket.send(JSON.stringify(m_pack));
+					_gameStatus = GAME_ACTIVE;
 					callback();
 				} else if(_this.playerIDs.length == _minPlayers){
 					//TODO: make game eligible for starting with minPlayers < numPlayers < maxPlayers
@@ -213,7 +196,6 @@ function Game(minP, maxP){
 		if(!lobbyComplete){
 			this.startLobby();
 		}
-		setupControls(this);
 		var obj = this;
 		setTimeout(function(){
 			gameLoop(obj);
