@@ -126,6 +126,7 @@ function Game(minP, maxP){
 		canv.style = canvStyle;
 		this.canvs[""+canvID] = new Canvas(canv, this);
 		htmlBod.insertBefore(canv, htmlBod.firstChild);
+		return canv;
 	}
 
 	this.addHTMLObject = function(obj,objID){
