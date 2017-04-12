@@ -13,9 +13,14 @@ function SupaShoota() {
 
 	_this.init = function() {
 		_this.game = new Game(2,10);
-		_this.game.addCanvas("defCanv", 600, 600, "border: 1px solid green; background: black;");
+		_this.game.addCanvas("defCanv", 1280, 720, "border: 1px solid green; background: black; margin: 0 auto; display: block;");
+		_this.canvas = _this.game.canvs["defCanv"].htmlCanv;
 		_this.game.canvs["defCanv"].setBaseState();
 
+		_this.setCanvasSize();
+		$(window).on("resize", function() {
+			_this.setCanvasSize();
+		})
 
 		_this.addPlayer(TEAM_1);
 		_this.addPlayer(TEAM_2);
@@ -29,6 +34,20 @@ function SupaShoota() {
 		_this.initControls();
 
 		_this.game.startGame();
+	};
+
+	_this.setCanvasSize = function() {
+		var width = $(_this.canvas).width();
+	    var height = $(_this.canvas).height();
+	    var maxWidth = $(window).width() - parseInt($("body").css("margin-left")) * 2 - 2;
+	    var maxHeight = $(window).height() - parseInt($("body").css("margin-top")) * 2 - 2;
+
+	    var ratio = maxWidth / width;
+	    if (height * ratio > maxHeight) {
+	        ratio = maxHeight / height;
+	    }
+	    $(_this.canvas).width(width * ratio);
+	    $(_this.canvas).height(height * ratio);
 	};
 
 	_this.initControls = function() {
