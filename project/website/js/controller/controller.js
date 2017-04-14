@@ -28,10 +28,15 @@ function Controller(){
 			controllerServerSocket.send(JSON.stringify(message));
 			active = true;
 		}
-		controllerServerSocket.onmessage = function(msg){
+		controllerServerSocket.onmessage = function(packet){
 			console.log("message received");
-			//TODO: handle parse errors here
-			pack = JSON.parse(msg);
+			if(packet.constructor !== "string".constructor){
+				//this message is already JSON
+				msg = packet;
+			} else {
+				msg = JSON.parse(packet);
+				//TODO: handle parse errors here 
+			}
 			if(msg.msgtype == MSG_TYPE_END_GAME){
 				controllerServerSocket.close();
 			}
@@ -40,7 +45,8 @@ function Controller(){
 	}
 
 	this.addHTMLObject = function(obj,objID){
-		document.getElementsByTagName("body")[0].insertBefore(obj,htmlBod.firstChild);
+		var htmlBod = document.getElementsByTagName("body")[0];
+		htmlBod.insertBefore(obj,htmlBod.firstChild);
 		this.htmlObjects[""+objID] = obj;
 	}
 
@@ -65,10 +71,48 @@ function Controller(){
 				uuid:getCookie("uuid"),
 				data:msg
 			}
-			controllerServerSocket.sendMessage(JSON.stringify(message));
+			console.log("sending message: ");
+			console.log(msg);
+			controllerServerSocket.send(JSON.stringify(message));
 		}
 	}
 
 	//TODO: provide a looping mechanism that calls sendState at a specified framerate if the developer wants it
 
+}
+
+function getParameterByName(name, url) {
+    if (!url) {
+        url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+ 
+function getCookie(key) {
+    key = key+'='
+    var records = document.cookie.split('; ');
+    for (var i = 0; i<records.length ;i++){
+        //Check to see if it is even possible to be the key
+        if(records[i].length>=key.length){
+            if(records[i].substr(0,key.length) === key){
+                return records[i].substr(key.length)
+            }
+        }
+    }
+}
+ 
+function setCookie(key , value , expiration) {
+ 
+    //Note this cookie is deleted when window is closed
+    if(expiration === null){
+        document.cookie = key+"="+value+";path=/"
+    }else{
+        document.cookie = key+"="+value+"; expires="+expiration+"; path=/"
+    }
+ 
 }
