@@ -1,5 +1,7 @@
 //Game API
 
+var DEBUG = false;
+
 var MSG_TYPE_START_GAME = 0;
 var MSG_TYPE_END_GAME = 1;
 var MSG_TYPE_NEW_PLAYER_JOIN = 2;
@@ -87,7 +89,7 @@ function Canvas(canv, game){
 //min players, max players
 function Game(minP, maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
-	var frame_rate = 33;
+	var frame_rate =60;
 	//TODO: combine active and lobbyComplete 
 	var active = true;
 	var lobbyComplete = false;
@@ -126,7 +128,6 @@ function Game(minP, maxP){
 		canv.style = canvStyle;
 		this.canvs[""+canvID] = new Canvas(canv, this);
 		htmlBod.insertBefore(canv, htmlBod.firstChild);
-		return canv;
 	}
 
 	this.addHTMLObject = function(obj,objID){
@@ -139,15 +140,22 @@ function Game(minP, maxP){
 	}
 
 	this.startLobby = function(callback){
+
+        if(DEBUG){
+            callback();
+            return;
+        }
+
+
 		gameStatus = GAME_LOBBYING;
 		//special initialization message
 		var message = {
-			name:getCookie("name"),
-			room:getCookie("gameroom"),
+			name:"HOST	",
+			room:getParameterByName('r'),
 			uuid:getCookie("uuid")
 		}
 
-		gameServerSocket = new WebSocket("ws://digibara.com/ws");
+		gameServerSocket = new WebSocket("ws://localhost/ws");
 		gameServerSocket.onopen = function(){
 			gameServerSocket.send(JSON.stringify(message));
 		}
@@ -158,22 +166,21 @@ function Game(minP, maxP){
 		lobbyComplete = true;
 		gameServerSocket.onmessage = function(msg){
 			//TODO: handle parse error
-			if(msg.constructor === "string".constructor){
-				var pack = JSON.parse(msg.data);
-			}
-			else {
-				var pack = msg;
-			}
+			console.log("Start Lobby: ");console.log(msg);
+			var pack = JSON.parse(msg.data);
 			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
 				//add player's UUID to array of players
+				console.log("Player Joined")
 				_this.playerIDs.push(pack.uuid);
 				if(_this.playerIDs.length == _maxPlayers){
+					console.log("Max Players Reached. Starting Game")
 					var m_pack = {
 						msgtype: MSG_TYPE_START_GAME,
 						uuid: getCookie("uuid"),
 						data: 0
 					}
 					//start game
+					console.log("Start Game: Calling the call back")
 					gameServerSocket.send(JSON.stringify(m_pack));
 					_gameStatus = GAME_ACTIVE;
 					callback();
@@ -199,9 +206,10 @@ function Game(minP, maxP){
 
 	this.startGame = function(){
 		//ensure lobbying has taken place
-		if(!lobbyComplete){
+		if(!lobbyComplete && !DEBUG){
 			this.startLobby();
 		}
+
 		var obj = this;
 		setTimeout(function(){
 			gameLoop(obj);
