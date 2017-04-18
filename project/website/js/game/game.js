@@ -158,7 +158,12 @@ function Game(minP, maxP){
 		lobbyComplete = true;
 		gameServerSocket.onmessage = function(msg){
 			//TODO: handle parse error
-			var pack = JSON.parse(msg.data);
+			if(msg.constructor === "string".constructor){
+				var pack = JSON.parse(msg.data);
+			}
+			else {
+				var pack = msg;
+			}
 			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
 				//add player's UUID to array of players
 				_this.playerIDs.push(pack.uuid);

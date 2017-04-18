@@ -72,7 +72,7 @@ function Controller(){
 				data:msg
 			}
 			console.log("sending message: ");
-			console.log(msg);
+			console.log(message);
 			controllerServerSocket.send(JSON.stringify(message));
 		}
 	}
