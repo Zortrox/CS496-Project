@@ -24,35 +24,26 @@ function SupaShoota() {
 
 		//Create our control handler
 		_this.game.setControlHandler(function(uuid, controls){
-			if (controls["a"] == 1) {
+			//fire if right stick is moved enough
+			if (controls["rightMag"] >= 50) {
 				this.params["p-" + uuid + "_fire"] = true;
-			} else if (this.params["p-" + uuid + "_fire"] == true) {
+				this.params["p-" + uuid + "_dir"] = controls["rightAng"];
+			} else {
+				if (controls["rightMag"] >= 5) {
+					this.params["p-" + uuid + "_dir"] = controls["rightAng"];
+				}
 				this.params["p-" + uuid + "_fire"] = false;
 			}
+			//update facing direction
 			
-			if (controls["up"] == 1) {
-				this.params["p-" + uuid + "_move"] = 1;
-			} else if (this.params["p-" + uuid + "_move"] == 1) {
-				this.params["p-" + uuid + "_move"] = 0;
+			
+			//movement
+			this.params["p-" + uuid + "_speed"] = controls["leftMag"];
+			if (controls["leftMag"] > 5) {
+				//small buffer zone
+				this.params["p-" + uuid + "_rot"] = controls["leftAng"];
 			}
 
-			if (controls["down"] == 1) {
-				this.params["p-" + uuid + "_move"] = -1;
-			} else if (this.params["p-" + uuid + "_move"] == -1) {
-				this.params["p-" + uuid + "_move"] = 0;
-			}
-
-			if (controls["left"] == 1) {
-				this.params["p-" + uuid + "_rot"] = -1;
-			} else if (this.params["p-" + uuid + "_rot"] == -1) {
-				this.params["p-" + uuid + "_rot"] = 0;
-			}
-
-			if (controls["right"] == 1) {
-				this.params["p-" + uuid + "_rot"] = 1;
-			} else if (this.params["p-" + uuid + "_rot"] == 1) {
-				this.params["p-" + uuid + "_rot"] = 0;
-			}
 		});
 
 		_this.game.startLobby(_this.initPreGame);
@@ -85,13 +76,13 @@ function SupaShoota() {
 
 		var player = new Player(teamNum);
 		var pParams = {}
-		pParams[strID + "_rot"] = 0;
-		pParams[strID + "_move"] = 0;
+		pParams[strID + "_rot"] = 0;	//movement rotation
+		pParams[strID + "_speed"] = 0;	//movement speed
+		pParams[strID + "_dir"] = 0;	//shooting (facing) direction
+		pParams[strID + "_fire"] = 0;	//if shooting
 
 		_this.game.canvs["defCanv"].addDynamicObject(strID, player.draw, pParams, player.update);
 		players.push(player);
-
-
 	}
 
 	_this.init();
