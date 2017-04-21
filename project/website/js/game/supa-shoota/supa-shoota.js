@@ -22,18 +22,40 @@ function SupaShoota() {
 			_this.setCanvasSize();
 		})
 
-		_this.addPlayer(TEAM_1);
-		_this.addPlayer(TEAM_2);
-		_this.addPlayer(TEAM_2);
-
 		//Create our control handler
-		_this.game.setControlHandler(function(controls){
-			this.params[controls[0]] = controls[1];
+		_this.game.setControlHandler(function(uuid, controls){
+			if (controls["a"] == 1) {
+				this.params["p-" + uuid + "_fire"] = true;
+			} else if (this.params["p-" + uuid + "_fire"] == true) {
+				this.params["p-" + uuid + "_fire"] = false;
+			}
+			
+			if (controls["up"] == 1) {
+				this.params["p-" + uuid + "_move"] = 1;
+			} else if (this.params["p-" + uuid + "_move"] == 1) {
+				this.params["p-" + uuid + "_move"] = 0;
+			}
+
+			if (controls["down"] == 1) {
+				this.params["p-" + uuid + "_move"] = -1;
+			} else if (this.params["p-" + uuid + "_move"] == -1) {
+				this.params["p-" + uuid + "_move"] = 0;
+			}
+
+			if (controls["left"] == 1) {
+				this.params["p-" + uuid + "_rot"] = -1;
+			} else if (this.params["p-" + uuid + "_rot"] == -1) {
+				this.params["p-" + uuid + "_rot"] = 0;
+			}
+
+			if (controls["right"] == 1) {
+				this.params["p-" + uuid + "_rot"] = 1;
+			} else if (this.params["p-" + uuid + "_rot"] == 1) {
+				this.params["p-" + uuid + "_rot"] = 0;
+			}
 		});
 
-		_this.initControls();
-
-		_this.game.startGame();
+		_this.game.startLobby(_this.initPreGame);
 	};
 
 	_this.setCanvasSize = function() {
@@ -50,107 +72,16 @@ function SupaShoota() {
 	    $(_this.canvas).height(height * ratio);
 	};
 
-	_this.initControls = function() {
-		document.addEventListener('keydown', function(event) {
-			//arrows + ctrl
-			if(event.keyCode == 37) {
-				_this.game.controlHandler(["p0_rot", -1]);
-			}
-			else if(event.keyCode == 38) {
-				_this.game.controlHandler(["p0_move", 1]);
-			}
-			else if(event.keyCode == 39) {
-				_this.game.controlHandler(["p0_rot", 1]);
-			}
-			else if(event.keyCode == 40) {
-				_this.game.controlHandler(["p0_move", -1]);
-			}
-			else if(event.keyCode == 191) {
-				_this.game.controlHandler(["p0_fire", true]);
-			}
+	_this.initPreGame = function() {
+		for (var i = 0; i < _this.game.playerIDs.length; i++) {
+			_this.addPlayer(_this.game.playerIDs[i], TEAM_1 + i);
+		}
 
-			//WASD + Q
-			else if(event.key == "a") {
-				_this.game.controlHandler(["p1_rot", -1]);
-			}
-			else if(event.key == "w") {
-				_this.game.controlHandler(["p1_move", 1]);
-			}
-			else if(event.key == "d") {
-				_this.game.controlHandler(["p1_rot", 1]);
-			}
-			else if(event.key == "s") {
-				_this.game.controlHandler(["p1_move", -1]);
-			}
-			else if(event.key == "q") {
-				_this.game.controlHandler(["p1_fire", true]);
-			}
-
-			//IJKL + U
-			else if(event.key == "j") {
-				_this.game.controlHandler(["p2_rot", -1]);
-			}
-			else if(event.key == "i") {
-				_this.game.controlHandler(["p2_move", 1]);
-			}
-			else if(event.key == "l") {
-				_this.game.controlHandler(["p2_rot", 1]);
-			}
-			else if(event.key == "k") {
-				_this.game.controlHandler(["p2_move", -1]);
-			}
-			else if(event.key == "u") {
-				_this.game.controlHandler(["p2_fire", true]);
-			}
-		});
-
-		document.addEventListener('keyup', function(event) {
-			//arrows
-			if(event.keyCode == 37) {
-				_this.game.controlHandler(["p0_rot", 0]);
-			}
-			else if(event.keyCode == 38) {
-				_this.game.controlHandler(["p0_move", 0]);
-			}
-			else if(event.keyCode == 39) {
-				_this.game.controlHandler(["p0_rot", 0]);
-			}
-			else if(event.keyCode == 40) {
-				_this.game.controlHandler(["p0_move", 0]);
-			}
-
-			//WASD
-			else if(event.key == "a") {
-				_this.game.controlHandler(["p1_rot", 0]);
-			}
-			else if(event.key == "w") {
-				_this.game.controlHandler(["p1_move", 0]);
-			}
-			else if(event.key == "d") {
-				_this.game.controlHandler(["p1_rot", 0]);
-			}
-			else if(event.key == "s") {
-				_this.game.controlHandler(["p1_move", 0]);
-			}
-
-			//IJKL
-			else if(event.key == "j") {
-				_this.game.controlHandler(["p2_rot", 0]);
-			}
-			else if(event.key == "i") {
-				_this.game.controlHandler(["p2_move", 0]);
-			}
-			else if(event.key == "l") {
-				_this.game.controlHandler(["p2_rot", 0]);
-			}
-			else if(event.key == "k") {
-				_this.game.controlHandler(["p2_move", 0]);
-			}
-		});
+		_this.game.startGame();
 	}
 
-	_this.addPlayer = function(teamNum) {
-		var strID = "p" + players.length;
+	_this.addPlayer = function(uuid, teamNum) {
+		var strID = "p-" + uuid;
 
 		var player = new Player(teamNum);
 		var pParams = {}
