@@ -12,7 +12,7 @@ function SupaShoota() {
 	_this.game = null;
 
 	_this.init = function() {
-		_this.game = new Game(2,10);
+		_this.game = new Game(1,2);
 		_this.game.addCanvas("defCanv", 1280, 720, "border: 1px solid green; background: black; margin: 0 auto; display: block;");
 		_this.canvas = _this.game.canvs["defCanv"].htmlCanv;
 		_this.game.canvs["defCanv"].setBaseState();
@@ -93,10 +93,11 @@ function Player(teamNum) {
 
 	_this.x = 0;
 	_this.y = 0;
+	_this.rot = 0;
+	_this.speed = 0;
 	_this.dir = 0;
+	_this.lastFire = 0;
 	_this.rad = 20;
-	_this.speed = 2;
-	_this.rotSpeed = 3;
 	_this.teamNum = 0;
 	_this.color = "#F00";
 	_this.bulletNum = 0;
@@ -160,19 +161,33 @@ function Player(teamNum) {
 	};
 
 	_this.update = function() {
-		if (!_this.dead) {
-			var rot = this.canv.game.params[this.id+"_rot"];
-			var move = this.canv.game.params[this.id+"_move"];
+		//rot, speed
+		//dir, fire
 
-			_this.dir += .02 * rot * _this.rotSpeed;
-			_this.x += (Math.cos(_this.dir) * move) * _this.speed * (move < 0 ? .7 : 1);
-			_this.y += (Math.sin(_this.dir) * move) * _this.speed * (move < 0 ? .7 : 1);
+		if (!_this.dead) {
+			_this.dir = this.canv.game.params[this.id+"_dir"];	//shooting direction
 
 			var fire = this.canv.game.params[this.id+"_fire"];
+
 			if (fire) {
-				this.canv.game.params[this.id+"_fire"] = false;
-				_this.fire(this.canv);
+				var time = new Date().getTime();
+
+				if (time - _this.lastFire > 100) {
+					_this.fire(this.canv);
+					_this.lastFire = new Date().getTime();
+				}
+			} else {
+				_this.dir = this.canv.game.params[this.id+"_rot"];
 			}
+
+			_this.rot = this.canv.game.params[this.id+"_rot"];
+			_this.speed = this.canv.game.params[this.id+"_speed"];
+
+			//change speed based on facing/firing direction
+			_this.speed *= 1.0 - 0.200794 * _this.dir - 4.36005 * Math.pow(_this.dir, 2) + 6.33598 * Math.pow(_this.dir, 3) - 2.27513 * Math.pow(_this.dir, 4);
+
+			_this.x += Math.cos(_this.rot) * _this.speed / 50;
+			_this.y += Math.sin(_this.rot) * _this.speed / 50;
 		} else {
 			this.expired = true;
 		}
@@ -196,7 +211,8 @@ function Player(teamNum) {
 	}
 
 	_this.fire = function(canvas) {
-		var tBullet = new Bullet(_this.teamNum, _this.x + Math.cos(_this.dir) * _this.rad, _this.y + Math.sin(_this.dir) * _this.rad, _this.dir);
+		var tBullet = new Bullet(_this.teamNum, _this.x + Math.cos(_this.dir) * _this.rad, _this.y + Math.sin(_this.dir)
+			* _this.rad, _this.dir);
 		canvas.addDynamicObject(this.id + "_bt_" + _this.bulletNum, tBullet.draw, {}, tBullet.update);
 		_this.bulletNum++;
 	}
