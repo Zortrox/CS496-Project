@@ -1,11 +1,16 @@
 //Game API
 
-/*
-if(port_address === null){
-	console.log("Terminating due to lack of lobby space");
-	throw new Error();
-}
-*/
+var DEBUG = false;
+
+var MSG_TYPE_START_GAME = 0;
+var MSG_TYPE_END_GAME = 1;
+var MSG_TYPE_NEW_PLAYER_JOIN = 2;
+var MSG_TYPE_CONTROL_DATA = 3;
+
+var GAME_CREATED = 0;
+var GAME_LOBBYING = 1;
+var GAME_ACTIVE = 2;
+var GAME_ENDED = 3;
 
 //-------------------------------------------------------------------------------------
 
@@ -80,49 +85,23 @@ function Canvas(canv, game){
 
 //Game Object
 //Master object for a unique game instance
-function Game(minPlayers, maxPlayers, controllerID){
-	var minPlayers = minPlayers;
-	var maxPlayers = maxPlayers;
+//When the Game developer submits the game, they will be responsible for specifying 
+//min players, max players
+function Game(minP, maxP){
 	var htmlBod = document.getElementsByTagName("body")[0];
-	var frame_rate = 33;
+	var frame_rate =60;
+	//TODO: combine active and lobbyComplete 
 	var active = true;
-	var gameStarter = null;
 	var lobbyComplete = false;
-	var controllerID = controllerID;
 	var gameServerSocket = null;
-	var portNumber = null;
-	this.playerCount = 0;
+	var minPlayers = minP;
+	var maxPlayers = maxP;
+	var gameStatus = GAME_CREATED;
+	this.playerIDs = [];
 	this.params = {};
 	this.canvs = [];
 	this.htmlObjects = [];	//non-canvas HTML elements
 	this.controlHandler = null;
-
-	function setupControls(obj){
-		/*
-		//TODO: setup event based control handling from gameServerSocket
-		gameServerSocket.onmessage = function(msg){
-			this.controlHandler(msg.data);
-		}
-		*/
-
-		//sample for Pong
-		window.onkeydown = function(e){
-			var control = null;
-			if(e.key === "ArrowUp"){
-				control = [0,-1];
-			} else if(e.key === "ArrowDown"){
-				control = [0,1];
-			} else if(e.key === "w"){
-				control = [-1,0];
-			} else if(e.key === "s"){
-				control = [1,0];
-			} else {
-				control = [0,0];
-				return;
-			}
-			obj.controlHandler(control);
-		}
-	}
 
 	function gameRefresh(obj){
 		for(canv in obj.canvs){
@@ -160,23 +139,61 @@ function Game(minPlayers, maxPlayers, controllerID){
 		this.params[""+id] = defValue;
 	}
 
-	this.startLobby = function(){
-		//do lobby stuff
-		/*
-		gameServerSocket = new WebSocket(port_address);
-		var introPacket = {
-			"minPlayers" : minPlayers,
-			"maxPlayers" : maxPlayers,
-			"controllerID" : controllerID
+	this.startLobby = function(callback){
+
+        if(DEBUG){
+            callback();
+            return;
+        }
+
+
+		gameStatus = GAME_LOBBYING;
+		//special initialization message
+		var message = {
+			name:"HOST	",
+			room:getParameterByName('r'),
+			uuid:getCookie("uuid")
 		}
-		gameServerSocket.send(JSON.stringify(introPacket));
-		//TODO: Wait until message is received from game server saying game is ready to move on
-		//message received should contain number of players
-		var numPlayers
-		*/
-		var numPlayers = 2;
-		this.playerCount = numPlayers;
+
+		gameServerSocket = new WebSocket("ws://localhost/ws");
+		gameServerSocket.onopen = function(){
+			gameServerSocket.send(JSON.stringify(message));
+		}
+		var _this = this;
+		var _maxPlayers = maxPlayers;
+		var _minPlayers = minPlayers;
+		var _gameStatus = gameStatus;
 		lobbyComplete = true;
+		gameServerSocket.onmessage = function(msg){
+			//TODO: handle parse error
+			console.log("Start Lobby: ");console.log(msg);
+			var pack = JSON.parse(msg.data);
+			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+				//add player's UUID to array of players
+				console.log("Player Joined")
+				_this.playerIDs.push(pack.uuid);
+				if(_this.playerIDs.length == _maxPlayers){
+					console.log("Max Players Reached. Starting Game")
+					var m_pack = {
+						msgtype: MSG_TYPE_START_GAME,
+						uuid: getCookie("uuid"),
+						data: 0
+					}
+					//start game
+					console.log("Start Game: Calling the call back")
+					gameServerSocket.send(JSON.stringify(m_pack));
+					_gameStatus = GAME_ACTIVE;
+					callback();
+				} else if(_this.playerIDs.length == _minPlayers){
+					//TODO: make game eligible for starting with minPlayers < numPlayers < maxPlayers
+				}
+			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
+				//verify UUID of sending player
+				if(_this.playerIDs.indexOf(pack.uuid) >= 0){
+					_this.controlHandler(pack.uuid, pack.data);
+				}
+			}
+		}	
 	}
 
 	this.setFrameRate = function(num){
@@ -189,13 +206,61 @@ function Game(minPlayers, maxPlayers, controllerID){
 
 	this.startGame = function(){
 		//ensure lobbying has taken place
-		if(!lobbyComplete){
+		if(!lobbyComplete && !DEBUG){
 			this.startLobby();
 		}
-		setupControls(this);
+
 		var obj = this;
 		setTimeout(function(){
 			gameLoop(obj);
 		}, 1000/frame_rate);
 	}
+
+	this.endGame = function(callback){
+		active = false;
+		gameStatus = GAME_ENDED;
+		var msg = {
+			msgtype: MSG_TYPE_END_GAME,
+			uuid: getCookie("uuid"),
+			data: 0
+		}
+		gameServerSocket.send(JSON.stringify(msg));
+		callback();
+	}
+}
+
+function getParameterByName(name, url) {
+    if (!url) {
+        url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+ 
+function getCookie(key) {
+    key = key+'='
+    var records = document.cookie.split('; ');
+    for (var i = 0; i<records.length ;i++){
+        //Check to see if it is even possible to be the key
+        if(records[i].length>=key.length){
+            if(records[i].substr(0,key.length) === key){
+                return records[i].substr(key.length)
+            }
+        }
+    }
+}
+ 
+function setCookie(key , value , expiration) {
+ 
+    //Note this cookie is deleted when window is closed
+    if(expiration === null){
+        document.cookie = key+"="+value+";path=/"
+    }else{
+        document.cookie = key+"="+value+"; expires="+expiration+"; path=/"
+    }
+ 
 }
