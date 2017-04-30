@@ -46,8 +46,11 @@ function newQuestion(){
     document.getElementById("C").innerHTML = questions[questionIndex][3]; 
     document.getElementById("D").innerHTML = questions[questionIndex][4]; 
 
+    for(var i = 0; i < players.length; i++){
+            players[i].answered = false;
+    }
+
     startTimer(10);
-    addPlayer("wefew", 8);
 }
 
 function Quiz() {
@@ -78,6 +81,7 @@ function Quiz() {
         question.style.marginTop = "10px";
         question.style.border = "1px solid black";
         question.style.borderRadius = "10px";
+        question.style.backgroundColor = "#996699";
 
 		//the 4 choices
 		var choiceA = document.createElement('button');
@@ -89,6 +93,7 @@ function Quiz() {
         choiceA.style.marginTop = "10px";
         choiceA.style.border = "1px solid black";
         choiceA.style.borderRadius = "10px";
+        choiceA.style.backgroundColor = "#996699";
 
 		var choiceB = document.createElement('button');
 		choiceB.innerText = "Choice B";
@@ -99,6 +104,7 @@ function Quiz() {
         choiceB.style.marginTop = "10px";
         choiceB.style.border = "1px solid black";
         choiceB.style.borderRadius = "10px";
+        choiceB.style.backgroundColor = "#996699";
 		
 		var choiceC = document.createElement('button');
 		choiceC.innerText = "Choice C";
@@ -109,6 +115,7 @@ function Quiz() {
         choiceC.style.marginTop = "10px";
         choiceC.style.border = "1px solid black";
         choiceC.style.borderRadius = "10px";
+        choiceC.style.backgroundColor = "#996699";
 		
 		var choiceD = document.createElement('button');
 		choiceD.innerText = "Choiljijoce D";
@@ -119,6 +126,7 @@ function Quiz() {
         choiceD.style.marginTop = "10px";
         choiceD.style.border = "1px solid black";
         choiceD.style.borderRadius = "10px";
+        choiceD.style.backgroundColor = "#996699";
 
 		div.appendChild(question);
 		div.appendChild(choiceA);
@@ -157,6 +165,11 @@ function Quiz() {
                     } else {
                         document.getElementById(uuid).style.backgroundColor = "white";
                     }
+                }
+
+                //players can't answer twice
+                if(this.players[i].answered = true){
+                    break;
                 }
 
 				//check if the answer is correct and update score
@@ -199,20 +212,29 @@ function Quiz() {
 	this.init();
 }
 
-function addPlayer(name, number) {
-        alert(players.length);
-        var width = 90 / (players.length + 1);
-width = 10;
-        var p = document.createElement('div');
-        p.innerHTML = "0";
+function addPlayer(n, num) {
+        var width = 97 / (players.length + 1);
+        
+        var p = document.createElement('button');
+        p.innerHTML = n + ": 0";
+        p.style.outline = "none";
+        p.style.marginTop = "10px";
+        p.style.border = "1px solid black";
+        p.style.borderRadius = "10px";
+        p.style.width = width + "%";
+        p.style.height = "30px";
+
+        var c = getRandomColor();
+
+        p.style.backgroundColor = c;
 
         for(var i = 0; i < players.length; i++){
-            players[i].p.style.width = width + "%";
+            players[i].div.style.width = width + "%";
         }
 
         document.getElementById('main').appendChild(p);
 
-        var player = new Player(name, number, p);
+        var player = {name: name, id: num, div: p, score: 0, color: c, answered: false};
 		players.push(player);
 }
 
@@ -227,8 +249,11 @@ function getRandomColor() {
     return color;
 }
 
-function Player(name, number, p) {
+function Player(n, p) {
     alert("wefwefgrgrth");
+
+    var player = {name:n, id: num, div: p, score: 0, color: getRandomColor(), answered: false};
+
 	this.name = name;
 	this.id = number;
 	this.color = getRandomColor();
