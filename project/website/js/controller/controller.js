@@ -1,4 +1,6 @@
 //Controller API
+var SOCKET_ADDRESS = "ws://digibara.com/ws";
+
 var MSG_TYPE_START_GAME = 0;
 var MSG_TYPE_END_GAME = 1;
 var MSG_TYPE_NEW_PLAYER_JOIN = 2;
@@ -16,46 +18,45 @@ function Controller(){
     this.data = {};
     this.htmlObjects = [];
 
+    function initializeSocket(){
+    	//This is the message sent directly to the actual service not the SS Host
+      controllerServerSocket = new WebSocket(SOCKET_ADDRESS);
+      controllerServerSocket.onopen = function(){
+          var message = {
+              name:getCookie("name"),
+              room:getParameterByName("r"),
+              uuid:getCookie("uuid")
+          }
+          controllerServerSocket.send(JSON.stringify(message));
+          message = {
+              msgtype: MSG_TYPE_NEW_PLAYER_JOIN,
+              uuid: getCookie("uuid"),
+              name:getCookie("name")
+          }
+          controllerServerSocket.send(JSON.stringify(message));
+      }
+    }
+
+    function setupSocket(){
+    	controllerServerSocket.onmessage = function(packet){
+          console.log("message received");
+          if(packet.constructor !== "string".constructor){
+              //this message is already JSON
+              msg = packet;
+          } else {
+              msg = JSON.parse(packet);
+          }
+          if(msg.msgtype == MSG_TYPE_END_GAME){
+              controllerServerSocket.close();
+          }
+      }
+    }
+
     this.setup = function(){
         //special initilization message
-
-
-
-        //This is the message sent directly to the actual service not the SS Host
-        controllerServerSocket = new WebSocket("ws://localhost/ws");
-        controllerServerSocket.onopen = function(){
-
-            var message = {
-                name:getCookie("name"),
-                room:getParameterByName("r"),
-                uuid:getCookie("uuid")
-            }
-
-            controllerServerSocket.send(JSON.stringify(message));
-            console.log(message);
-            //
-            message = {
-                msgtype: MSG_TYPE_NEW_PLAYER_JOIN,
-                uuid: getCookie("uuid"),
-                name:getCookie("name")
-            }
-            controllerServerSocket.send(JSON.stringify(message));
-            active = true;
-        }
-        controllerServerSocket.onmessage = function(packet){
-            console.log("message received");
-            if(packet.constructor !== "string".constructor){
-                //this message is already JSON
-                msg = packet;
-            } else {
-                msg = JSON.parse(packet);
-                //TODO: handle parse errors here
-            }
-            if(msg.msgtype == MSG_TYPE_END_GAME){
-                controllerServerSocket.close();
-            }
-            //TODO: handle incoming messages from host - not first priority
-        }
+        initializeSocket();
+        active = true;
+        setupSocket();
     }
 
     this.addHTMLObject = function(obj,objID){
@@ -90,8 +91,6 @@ function Controller(){
             controllerServerSocket.send(JSON.stringify(message));
         }
     }
-
-    //TODO: provide a looping mechanism that calls sendState at a specified framerate if the developer wants it
 
 }
 
