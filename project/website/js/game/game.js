@@ -166,6 +166,7 @@ function Game(minP, maxP){
 					startButton.innerHTML = "Start Game Now!";
 					startButton.onclick = () => {
 						endLobby(_this, callback);
+						_gameStatus = GAME_ACTIVE;
 					}
 					_this.addHTMLObject(startButton, "startButton");
 				}
