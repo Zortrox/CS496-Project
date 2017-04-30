@@ -146,18 +146,21 @@ function Game(minP, maxP){
 	}
 
 	function setupSocket(_this){
+		var _gameStatus = gameStatus;
+		var _minPlayers = minPlayers;
+		var _maxPlayers = maxPlayers;
 		gameServerSocket.onmessage = function(msg){
 			//TODO: handle parse error
 			var pack = JSON.parse(msg.data);
-			if(gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
 				//add player's UUID to array of players
 				console.log("Player Joined")
 				_this.playerIDs.push(pack.uuid);
-				if(_this.playerIDs.length == maxPlayers){
+				if(_this.playerIDs.length == _maxPlayers){
 					console.log("Max Players Reached. Starting Game")
 					endLobby(_this, callback);
-					gameStatus = GAME_ACTIVE;
-				} else if(_this.playerIDs.length == minPlayers){
+					_gameStatus = GAME_ACTIVE;
+				} else if(_this.playerIDs.length == _minPlayers){
 					var startButton = document.createElement("button");
 					startButton.style = "position: fixed; top: 50vh; left: 50vw;";
 					startButton.onclick = () => {
@@ -165,7 +168,7 @@ function Game(minP, maxP){
 					}
 					_this.addHTMLObject(startButton, "startButton");
 				}
-			} else if(gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
+			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
 				//verify UUID of sending player
 				if(_this.playerIDs.indexOf(pack.uuid) >= 0){
 					_this.controlHandler(pack.uuid, pack.data);
