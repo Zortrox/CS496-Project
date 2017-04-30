@@ -91,11 +91,30 @@ func initGames() {
 	}
 
 	//TODO: Read this from file.
-	games["chat"] = &gameserver.Game{Id: "chat", Players:30,Name:"Chat Room",Script:"/static/js/wstest.js"}
-	games["pong"] = &gameserver.Game{Id: "pong", Players:2,Name:"Multi-Pong",Script:"/static/js/game/sample/pong.js"}
-	games["shooter"] = &gameserver.Game{Id:"shoot",Players:4,Name:"Not-Pong Shooter",Script:"/static/js/game/supa-shoota/supa-shoota.js"}
-	games["race"] = &gameserver.Game{Id:"race",Players:4,Name:"Roll N Rock Racer",Script:"/static/js/game/roll-n-rock-racing/game.js"}
-
+	games["chat"] = &gameserver.Game {
+		Id: "chat",
+		Players:30,
+		Name:"Chat Room",
+		Script:"/static/js/wstest.js",
+		ContScript:"/static/js/controller/controllers/classic.js"}
+	games["pong"] = &gameserver.Game{
+		Id: "pong",
+		Players:2,
+		Name:"Multi-Pong",
+		Script:"/static/js/game/sample/pong.js",
+		ContScript:"/static/js/controller/controllers/classic.js"}
+	games["shooter"] = &gameserver.Game{
+		Id:"shoot",
+		Players:4,
+		Name:"Not-Pong Shooter",
+		Script:"/static/js/game/supa-shoota/supa-shoota.js",
+		ContScript:"/static/js/controller/controllers/chriscontroller.js"}
+	games["race"] = &gameserver.Game{
+		Id:"race",
+		Players:4,
+		Name:"Roll N Rock Racer",
+		Script:"/static/js/game/roll-n-rock-racing/game.js",
+		ContScript:"/static/js/controller/controllers/supa-shoota.js"}
 }
 
 
