@@ -145,7 +145,7 @@ function Game(minP, maxP){
 		}
 	}
 
-	function setupSocket(_this){
+	function setupSocket(_this, callback){
 		var _gameStatus = gameStatus;
 		var _minPlayers = minPlayers;
 		var _maxPlayers = maxPlayers;
@@ -162,7 +162,8 @@ function Game(minP, maxP){
 					_gameStatus = GAME_ACTIVE;
 				} else if(_this.playerIDs.length == _minPlayers){
 					var startButton = document.createElement("button");
-					startButton.style = "position: fixed; top: 50vh; left: 50vw;";
+					startButton.style = "position: fixed; top: 50vh; left: 50vw; z-index: 100;";
+					startButton.innerHTML = "Start Game Now!";
 					startButton.onclick = () => {
 						endLobby(_this, callback);
 					}
@@ -210,7 +211,7 @@ function Game(minP, maxP){
     }
 		gameStatus = GAME_LOBBYING;
 		initializeSocket();
-		setupSocket(this);
+		setupSocket(this, callback);
 		lobbyComplete = true;
 	}
 
