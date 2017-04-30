@@ -1,6 +1,7 @@
 //Game API
 
 var DEBUG = false;
+var SOCKET_ADDRESS = "ws://digibara.com/ws";
 
 var MSG_TYPE_START_GAME = 0;
 var MSG_TYPE_END_GAME = 1;
@@ -118,6 +119,61 @@ function Game(minP, maxP){
 		}
 	}
 
+	function endLobby(_this, callback){
+		var m_pack = {
+			msgtype: MSG_TYPE_START_GAME,
+			uuid: getCookie("uuid"),
+			data: 0
+		}
+		gameServerSocket.send(JSON.stringify(m_pack));
+		if( _this.htmlObjects["startButton"] ){
+			_this.removeHTMLObject("startButton");
+		}
+		callback();
+	}
+
+	function initializeSocket(){
+		//special initialization message
+		var message = {
+			name:"HOST	",
+			room:getParameterByName('r'),
+			uuid:getCookie("uuid")
+		}
+		gameServerSocket = new WebSocket(SOCKET_ADDRESS);
+		gameServerSocket.onopen = function(){
+			gameServerSocket.send(JSON.stringify(message));
+		}
+	}
+
+	function setupSocket(_this){
+		gameServerSocket.onmessage = function(msg){
+			//TODO: handle parse error
+			var pack = JSON.parse(msg.data);
+			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
+				//add player's UUID to array of players
+				console.log("Player Joined")
+				_this.playerIDs.push(pack.uuid);
+				if(_this.playerIDs.length == _maxPlayers){
+					console.log("Max Players Reached. Starting Game")
+					endLobby(_this, callback);
+					_gameStatus = GAME_ACTIVE;
+				} else if(_this.playerIDs.length == _minPlayers){
+					var startButton = document.createElement("button");
+					startButton.style = "position: fixed; top: 50vh; left: 50vw;";
+					startButton.onclick = () => {
+						endLobby(_this, callback);
+					}
+					_this.addHTMLObject(startButton, "startButton");
+				}
+			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
+				//verify UUID of sending player
+				if(_this.playerIDs.indexOf(pack.uuid) >= 0){
+					_this.controlHandler(pack.uuid, pack.data);
+				}
+			}
+		}	
+	}
+
 	//all HTML element insertions (Canvas or other) insert the new element as the first element in body
 	//canvas is created using given style specs
 	this.addCanvas = function(canvID,canvWidth,canvHeight,canvStyle){
@@ -135,65 +191,24 @@ function Game(minP, maxP){
 		this.htmlObjects[""+objID] = obj;
 	}
 
+	this.removeHTMLObject = function(objID){
+		document.getElementsByTagName("body")[0].removeChild(this.htmlObjects[""+objID]);
+		delete this.htmlObjects[""+objID];
+	}
+
 	this.addParam = function(id, defValue){
 		this.params[""+id] = defValue;
 	}
 
 	this.startLobby = function(callback){
-
-        if(DEBUG){
-            callback();
-            return;
-        }
-
-
+    if(DEBUG){
+        callback();
+        return;
+    }
 		gameStatus = GAME_LOBBYING;
-		//special initialization message
-		var message = {
-			name:"HOST	",
-			room:getParameterByName('r'),
-			uuid:getCookie("uuid")
-		}
-
-		gameServerSocket = new WebSocket("ws://localhost/ws");
-		gameServerSocket.onopen = function(){
-			gameServerSocket.send(JSON.stringify(message));
-		}
-		var _this = this;
-		var _maxPlayers = maxPlayers;
-		var _minPlayers = minPlayers;
-		var _gameStatus = gameStatus;
+		initializeSocket();
+		setupSocket(this);
 		lobbyComplete = true;
-		gameServerSocket.onmessage = function(msg){
-			//TODO: handle parse error
-			console.log("Start Lobby: ");console.log(msg);
-			var pack = JSON.parse(msg.data);
-			if(_gameStatus == GAME_LOBBYING && pack.msgtype == MSG_TYPE_NEW_PLAYER_JOIN){
-				//add player's UUID to array of players
-				console.log("Player Joined")
-				_this.playerIDs.push(pack.uuid);
-				if(_this.playerIDs.length == _maxPlayers){
-					console.log("Max Players Reached. Starting Game")
-					var m_pack = {
-						msgtype: MSG_TYPE_START_GAME,
-						uuid: getCookie("uuid"),
-						data: 0
-					}
-					//start game
-					console.log("Start Game: Calling the call back")
-					gameServerSocket.send(JSON.stringify(m_pack));
-					_gameStatus = GAME_ACTIVE;
-					callback();
-				} else if(_this.playerIDs.length == _minPlayers){
-					//TODO: make game eligible for starting with minPlayers < numPlayers < maxPlayers
-				}
-			} else if(_gameStatus == GAME_ACTIVE && pack.msgtype == MSG_TYPE_CONTROL_DATA){
-				//verify UUID of sending player
-				if(_this.playerIDs.indexOf(pack.uuid) >= 0){
-					_this.controlHandler(pack.uuid, pack.data);
-				}
-			}
-		}	
 	}
 
 	this.setFrameRate = function(num){
