@@ -64,11 +64,7 @@ function Canvas(canv, game){
 		var obj = new DynamicObject(id, drawFunction, this, params, updateFunction);
 		for (var prop in obj.params) {
 	    if (obj.params.hasOwnProperty(prop)) {
-	    		if(!this.game.params.hasOwnProperty(prop)){
-	        	this.game.params[""+prop] = obj.params[""+prop];
-	      	} else {
-	      		//TODO: throw error for repeated property
-	      	}
+        this.game.params[""+prop] = obj.params[""+prop];
 	    }
 		}
 		this.dynamicObjects.push(obj);
