@@ -108,13 +108,13 @@ func initGames() {
 		Players:4,
 		Name:"Not-Pong Shooter",
 		Script:"/static/js/game/supa-shoota/supa-shoota.js",
-		ContScript:"/static/js/controller/controllers/chriscontroller.js"}
+		ContScript:"/static/js/controller/controllers/supa-shoota.js"}
 	games["race"] = &gameserver.Game{
 		Id:"race",
 		Players:4,
 		Name:"Roll N Rock Racer",
 		Script:"/static/js/game/roll-n-rock-racing/game.js",
-		ContScript:"/static/js/controller/controllers/supa-shoota.js"}
+		ContScript:"/static/js/controller/controllers/chriscontroller.js"}
 }
 
 

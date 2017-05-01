@@ -22,7 +22,7 @@ function Controller(){
 
 
         //This is the message sent directly to the actual service not the SS Host
-        controllerServerSocket = new WebSocket("ws://localhost/ws");
+        controllerServerSocket = new WebSocket("ws://digibara.com/ws");
         controllerServerSocket.onopen = function(){
 
             var message = {

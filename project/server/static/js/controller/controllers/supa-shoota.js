@@ -447,7 +447,7 @@ window.onload = function() {
         strokeStyle: "#600"
     });
 
-    controller = new Controller();
+    var controller = new Controller();
     controller.data["leftMag"] = 0;
     controller.data["leftAng"] = 0;
     controller.data["rightMag"] = 0;
@@ -460,12 +460,12 @@ window.onload = function() {
         var leftX = stickLeft.deltaX();
         var leftY = stickLeft.deltaY();
         var leftMag = Math.sqrt(leftX * leftX + leftY * leftY);
-        var leftAng = Math.atan(leftY, leftX);
+        var leftAng = Math.atan2(leftY, leftX);
 
         var rightX = stickRight.deltaX();
         var rightY = stickRight.deltaY();
         var rightMag = Math.sqrt(rightX * rightX + rightY * rightY);
-        var rightAng = Math.atan(rightY, rightX);
+        var rightAng = Math.atan2(rightY, rightX);
 
         newData = {};
         newData["leftMag"] = leftMag;

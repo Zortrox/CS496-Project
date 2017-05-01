@@ -189,6 +189,7 @@ type Game struct{
 	Players int // This is the amount a players that game be in the game
 	Name string // This is the long name of the game
 	Script string // This is the source of the script
+	ContScript string //string of the controller
 }
 
 func NewPlayer(uuid string, name string, room *Room) *Player{
