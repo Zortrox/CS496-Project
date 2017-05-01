@@ -12,136 +12,77 @@ function SupaShoota() {
 	_this.game = null;
 
 	_this.init = function() {
-		_this.game = new Game(2,10);
-		_this.game.addCanvas("defCanv", 600, 600, "border: 1px solid green; background: black;");
+		_this.game = new Game(1,2);
+		_this.game.addCanvas("defCanv", 1280, 720, "border: 1px solid green; background: black; margin: 0 auto; display: block;");
+		_this.canvas = _this.game.canvs["defCanv"].htmlCanv;
 		_this.game.canvs["defCanv"].setBaseState();
 
-
-		_this.addPlayer(TEAM_1);
-		_this.addPlayer(TEAM_2);
-		_this.addPlayer(TEAM_2);
+		_this.setCanvasSize();
+		$(window).on("resize", function() {
+			_this.setCanvasSize();
+		})
 
 		//Create our control handler
-		_this.game.setControlHandler(function(controls){
-			this.params[controls[0]] = controls[1];
+		_this.game.setControlHandler(function(uuid, controls){
+			//fire if right stick is moved enough
+			if (controls["rightMag"] >= 50) {
+				this.params["p-" + uuid + "_fire"] = true;
+				this.params["p-" + uuid + "_dir"] = controls["rightAng"];
+			} else {
+				if (controls["rightMag"] >= 5) {
+					this.params["p-" + uuid + "_dir"] = controls["rightAng"];
+				}
+				this.params["p-" + uuid + "_fire"] = false;
+			}
+			//update facing direction
+			
+			
+			//movement
+			this.params["p-" + uuid + "_speed"] = controls["leftMag"];
+			if (controls["leftMag"] > 5) {
+				//small buffer zone
+				this.params["p-" + uuid + "_rot"] = controls["leftAng"];
+			}
+
 		});
 
-		_this.initControls();
-
-		_this.game.startGame();
+		_this.game.startLobby(_this.initPreGame);
 	};
 
-	_this.initControls = function() {
-		document.addEventListener('keydown', function(event) {
-			//arrows + ctrl
-			if(event.keyCode == 37) {
-				_this.game.controlHandler(["p0_rot", -1]);
-			}
-			else if(event.keyCode == 38) {
-				_this.game.controlHandler(["p0_move", 1]);
-			}
-			else if(event.keyCode == 39) {
-				_this.game.controlHandler(["p0_rot", 1]);
-			}
-			else if(event.keyCode == 40) {
-				_this.game.controlHandler(["p0_move", -1]);
-			}
-			else if(event.keyCode == 191) {
-				_this.game.controlHandler(["p0_fire", true]);
-			}
+	_this.setCanvasSize = function() {
+		var width = $(_this.canvas).width();
+	    var height = $(_this.canvas).height();
+	    var maxWidth = $(window).width() - parseInt($("body").css("margin-left")) * 2 - 2;
+	    var maxHeight = $(window).height() - parseInt($("body").css("margin-top")) * 2 - 2;
 
-			//WASD + Q
-			else if(event.key == "a") {
-				_this.game.controlHandler(["p1_rot", -1]);
-			}
-			else if(event.key == "w") {
-				_this.game.controlHandler(["p1_move", 1]);
-			}
-			else if(event.key == "d") {
-				_this.game.controlHandler(["p1_rot", 1]);
-			}
-			else if(event.key == "s") {
-				_this.game.controlHandler(["p1_move", -1]);
-			}
-			else if(event.key == "q") {
-				_this.game.controlHandler(["p1_fire", true]);
-			}
+	    var ratio = maxWidth / width;
+	    if (height * ratio > maxHeight) {
+	        ratio = maxHeight / height;
+	    }
+	    $(_this.canvas).width(width * ratio);
+	    $(_this.canvas).height(height * ratio);
+	};
 
-			//IJKL + U
-			else if(event.key == "j") {
-				_this.game.controlHandler(["p2_rot", -1]);
-			}
-			else if(event.key == "i") {
-				_this.game.controlHandler(["p2_move", 1]);
-			}
-			else if(event.key == "l") {
-				_this.game.controlHandler(["p2_rot", 1]);
-			}
-			else if(event.key == "k") {
-				_this.game.controlHandler(["p2_move", -1]);
-			}
-			else if(event.key == "u") {
-				_this.game.controlHandler(["p2_fire", true]);
-			}
-		});
+	_this.initPreGame = function() {
+		for (var i = 0; i < _this.game.playerIDs.length; i++) {
+			_this.addPlayer(_this.game.playerIDs[i], TEAM_1 + i);
+		}
 
-		document.addEventListener('keyup', function(event) {
-			//arrows
-			if(event.keyCode == 37) {
-				_this.game.controlHandler(["p0_rot", 0]);
-			}
-			else if(event.keyCode == 38) {
-				_this.game.controlHandler(["p0_move", 0]);
-			}
-			else if(event.keyCode == 39) {
-				_this.game.controlHandler(["p0_rot", 0]);
-			}
-			else if(event.keyCode == 40) {
-				_this.game.controlHandler(["p0_move", 0]);
-			}
-
-			//WASD
-			else if(event.key == "a") {
-				_this.game.controlHandler(["p1_rot", 0]);
-			}
-			else if(event.key == "w") {
-				_this.game.controlHandler(["p1_move", 0]);
-			}
-			else if(event.key == "d") {
-				_this.game.controlHandler(["p1_rot", 0]);
-			}
-			else if(event.key == "s") {
-				_this.game.controlHandler(["p1_move", 0]);
-			}
-
-			//IJKL
-			else if(event.key == "j") {
-				_this.game.controlHandler(["p2_rot", 0]);
-			}
-			else if(event.key == "i") {
-				_this.game.controlHandler(["p2_move", 0]);
-			}
-			else if(event.key == "l") {
-				_this.game.controlHandler(["p2_rot", 0]);
-			}
-			else if(event.key == "k") {
-				_this.game.controlHandler(["p2_move", 0]);
-			}
-		});
+		_this.game.startGame();
 	}
 
-	_this.addPlayer = function(teamNum) {
-		var strID = "p" + players.length;
+	_this.addPlayer = function(uuid, teamNum) {
+		var strID = "p-" + uuid;
 
 		var player = new Player(teamNum);
 		var pParams = {}
-		pParams[strID + "_rot"] = 0;
-		pParams[strID + "_move"] = 0;
+		pParams[strID + "_rot"] = 0;	//movement rotation
+		pParams[strID + "_speed"] = 0;	//movement speed
+		pParams[strID + "_dir"] = 0;	//shooting (facing) direction
+		pParams[strID + "_fire"] = 0;	//if shooting
 
 		_this.game.canvs["defCanv"].addDynamicObject(strID, player.draw, pParams, player.update);
 		players.push(player);
-
-
 	}
 
 	_this.init();
@@ -152,10 +93,11 @@ function Player(teamNum) {
 
 	_this.x = 0;
 	_this.y = 0;
+	_this.rot = 0;
+	_this.speed = 0;
 	_this.dir = 0;
+	_this.lastFire = 0;
 	_this.rad = 20;
-	_this.speed = 2;
-	_this.rotSpeed = 3;
 	_this.teamNum = 0;
 	_this.color = "#F00";
 	_this.bulletNum = 0;
@@ -219,19 +161,33 @@ function Player(teamNum) {
 	};
 
 	_this.update = function() {
-		if (!_this.dead) {
-			var rot = this.canv.game.params[this.id+"_rot"];
-			var move = this.canv.game.params[this.id+"_move"];
+		//rot, speed
+		//dir, fire
 
-			_this.dir += .02 * rot * _this.rotSpeed;
-			_this.x += (Math.cos(_this.dir) * move) * _this.speed * (move < 0 ? .7 : 1);
-			_this.y += (Math.sin(_this.dir) * move) * _this.speed * (move < 0 ? .7 : 1);
+		if (!_this.dead) {
+			_this.dir = this.canv.game.params[this.id+"_dir"];	//shooting direction
 
 			var fire = this.canv.game.params[this.id+"_fire"];
+
 			if (fire) {
-				this.canv.game.params[this.id+"_fire"] = false;
-				_this.fire(this.canv);
+				var time = new Date().getTime();
+
+				if (time - _this.lastFire > 100) {
+					_this.fire(this.canv);
+					_this.lastFire = new Date().getTime();
+				}
+			} else {
+				_this.dir = this.canv.game.params[this.id+"_rot"];
 			}
+
+			_this.rot = this.canv.game.params[this.id+"_rot"];
+			_this.speed = this.canv.game.params[this.id+"_speed"];
+
+			//change speed based on facing/firing direction
+			_this.speed *= 1.0 - 0.200794 * _this.dir - 4.36005 * Math.pow(_this.dir, 2) + 6.33598 * Math.pow(_this.dir, 3) - 2.27513 * Math.pow(_this.dir, 4);
+
+			_this.x += Math.cos(_this.rot) * _this.speed / 50;
+			_this.y += Math.sin(_this.rot) * _this.speed / 50;
 		} else {
 			this.expired = true;
 		}
@@ -255,7 +211,8 @@ function Player(teamNum) {
 	}
 
 	_this.fire = function(canvas) {
-		var tBullet = new Bullet(_this.teamNum, _this.x + Math.cos(_this.dir) * _this.rad, _this.y + Math.sin(_this.dir) * _this.rad, _this.dir);
+		var tBullet = new Bullet(_this.teamNum, _this.x + Math.cos(_this.dir) * _this.rad, _this.y + Math.sin(_this.dir)
+			* _this.rad, _this.dir);
 		canvas.addDynamicObject(this.id + "_bt_" + _this.bulletNum, tBullet.draw, {}, tBullet.update);
 		_this.bulletNum++;
 	}
