@@ -67,7 +67,7 @@ function Canvas(canv, game){
         this.game.params[""+prop] = obj.params[""+prop];
 	    }
 		}
-		this.dynamicObjects[""+id] = obj;
+		this.dynamicObjects.push(obj);
 	}
 
 	//pseudo-private (should only be accessible to Game)
