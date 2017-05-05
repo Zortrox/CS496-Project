@@ -27,9 +27,12 @@
                     <button type="button" id="join-btn" onclick="show('join-menu'); hide('main-menu')" class="btn menu-btn add-margin-vertical btn-primary center-block"><i class="fa fa-user-plus" aria-hidden="true"></i> Join Game</button>
                 </div>
 
-                <div class="col-row">
+                <!-- <div class="col-row">
                     <button type="button" id="games-btn" onclick="show('game-menu'); hide('main-menu')" class="btn menu-btn add-margin-vertical btn-primary center-block"><i class="fa fa-gamepad" aria-hidden="true"></i> Game List</button>
-                </div>
+                </div> -->
+
+                <button type="button" id="games-btn" class="btn menu-btn add-margin-vertical btn-primary center-block"><i class="fa fa-gamepad" aria-hidden="true"></i><a href="/static/developer_kit.zip" style="text-decoration: none; color: white" download="developer_kit.zip"> Developer Kit</a></button>
+
 
                 <div class="col-row">
                     <button type="button" id="info-btn" data-toggle="modal" data-target="#info-modal" class="btn menu-btn add-margin-vertical btn-info center-block"><i class="fa fa-info-circle" aria-hidden="true"></i> Info</button>
@@ -56,6 +59,7 @@
 
 
             <!--          Game Menu            -->
+            
             <div id="game-menu" class="carousel slide" data-interval="0" style="display:none; width: 80%">
                 {{ template "gamemenu" . }}
             </div>

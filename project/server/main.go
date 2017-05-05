@@ -97,11 +97,11 @@ func initGames() {
 		Name:"Chat Room",
 		Script:"/static/js/wstest.js",
 		ContScript:"/static/js/controller/controllers/classic.js"}
-	games["pong"] = &gameserver.Game{
+	games["bomb"] = &gameserver.Game{
 		Id: "pong",
-		Players:2,
-		Name:"Multi-Pong",
-		Script:"/static/js/game/sample/pong.js",
+		Players:4,
+		Name:"Bomber Boy",
+		Script:"/static/js/game//bomberboys/bomberboy.js",
 		ContScript:"/static/js/controller/controllers/classic.js"}
 	games["shooter"] = &gameserver.Game{
 		Id:"shoot",
@@ -111,10 +111,16 @@ func initGames() {
 		ContScript:"/static/js/controller/controllers/supa-shoota.js"}
 	games["race"] = &gameserver.Game{
 		Id:"race",
-		Players:4,
+		Players:20,
 		Name:"Roll N Rock Racer",
 		Script:"/static/js/game/roll-n-rock-racing/game.js",
 		ContScript:"/static/js/controller/controllers/chriscontroller.js"}
+	games["quiz"] = &gameserver.Game{
+		Id:"race",
+		Players:20,
+		Name:"Quiz Game",
+		Script:"/static/js/game/quiz-game/game.js",
+		ContScript:"/static/js/controller/controllers/quiz-cont.js"}
 }
 
 
@@ -361,10 +367,10 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	// This will check make sure it the url is not connected with standard HTTP request
 	// EX: writing the URL in to browser and requesting page.
 
-	if r.Header.Get("Origin") != "http://"+r.Host {
-		http.Error(w, "Origin not allowed", 403)
-		return
-	}
+	// if r.Header.Get("Origin") != "http://"+r.Host {
+	// 	http.Error(w, "Origin not allowed", 403)
+	// 	return
+	// }
 
 
 	// TODO: Read the parameters from URL
